@@ -17,21 +17,21 @@ export const courseConfig: CourseConfig = {
       label: "Characters",
       href: "/characters",
     },
-    {
-      icon: "shieldStar",
-      label: "Leaderboards",
-      href: "/leaderboards",
-    },
-    {
-      icon: "box",
-      label: "Quests",
-      href: "/quests",
-    },
-    {
-      icon: "shop",
-      label: "Shop",
-      href: "/shop",
-    },
+    // {
+    //   icon: "shieldStar",
+    //   label: "Leaderboards",
+    //   href: "/leaderboards",
+    // },
+    // {
+    //   icon: "box",
+    //   label: "Quests",
+    //   href: "/quests",
+    // },
+    // {
+    //   icon: "shop",
+    //   label: "Shop",
+    //   href: "/shop",
+    // },
     {
       icon: "profile",
       label: "Profile",

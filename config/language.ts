@@ -18,8 +18,8 @@ export const languages = {
     flag: "https://www.svgrepo.com/show/405485/flag-for-flag-france.svg",
   },
   cn: {
-    name: "普通话",
-    flag: "https://www.svgrepo.com/show/405448/flag-for-flag-china.svg",
+    name: "English",
+    flag: "https://www.svgrepo.com/show/405645/flag-for-flag-united-states.svg",
   },
   ru: {
     name: "Русский",
