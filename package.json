@@ -22,7 +22,7 @@
     "expo-av": "~13.4.1",
     "expo-font": "~11.4.0",
     "expo-image": "~1.3.5",
-    "expo-linking": "^3.3.0",
+    "expo-linking": "~5.0.2",
     "expo-router": "^2.0.0",
     "expo-splash-screen": "~0.20.5",
     "expo-status-bar": "~1.6.0",
@@ -36,7 +36,8 @@
     "react-native-svg": "13.9.0",
     "react-native-video": "^6.16.1",
     "react-native-web": "~0.19.6",
-    "react-responsive": "^9.0.2"
+    "react-responsive": "^9.0.2",
+    "srt-parser-2": "^1.2.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

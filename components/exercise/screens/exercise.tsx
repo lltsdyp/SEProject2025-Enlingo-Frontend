@@ -174,6 +174,7 @@ import { useTheme } from "@/context/theme";
 import { useAudio } from "@/hooks/audio";
 import { calculatePrecentage, shuffleArray } from "@/lib/utils";
 import { ExerciseSet } from "@/types/course";
+import { InteractiveVideoPlayer } from "@/components/exercise/items/video-player-item";
 
 interface Props {
   exercise: ExerciseSet;
@@ -304,7 +305,7 @@ export default function ExerciseScreen({ exercise, increaseProgress, videoSource
         </View>
 
         {/* 视频播放器 - 位于屏幕中央上部 */}
-        <View
+        {/* <View
           style={{
             alignItems: "center",
             paddingHorizontal: layouts.padding,
@@ -323,7 +324,16 @@ export default function ExerciseScreen({ exercise, increaseProgress, videoSource
             shouldPlay={false}
             isLooping
           />
-        </View>
+        </View> */
+          <InteractiveVideoPlayer
+            videoSource={"http://26l1b06988.qicp.vip:38000/seproject-2025/test.mp4"}
+            srtSource={"http://26l1b06988.qicp.vip:38000/seproject-2025/test.srt"}
+            onTranslateRequest={(text) => {
+              // 在这里处理翻译逻辑...
+              console.log(`需要翻译: "${text}"`);
+            }}
+          />
+        }
 
         {/* 可以在这里添加其他内容，比如简单的控制按钮 */}
         <View

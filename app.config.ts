@@ -17,6 +17,11 @@ const config: ExpoConfig = {
   assetBundlePatterns: ["**/*"],
   ios: {
     supportsTablet: true,
+    infoPlist: {
+      NSAppTransportSecurity: {
+        "NSAllowsArbitraryLoads": true // <--- 临时完全禁用 ATS
+      }
+    }
   },
   android: {
     adaptiveIcon: {
