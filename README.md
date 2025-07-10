@@ -23,7 +23,7 @@ Follow these steps to get vilingo up and running on your local machine:
 1. **Clone the Repository:**
 
    ```
-   git clone https://github.com/ikyawthetpaing/vilingo.git
+   git clone https://github.com/infiniteboundary/seproject.git
    cd vilingo
    ```
 
@@ -56,8 +56,3 @@ We welcome contributions from the community! If you'd like to improve vilingo, p
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Contact
-
-For questions or support, please contact [ikyawthetpaing@gmail.com](mailto:ikyawthetpaing@gmail.com).
-
-Happy Learning with vilingo! 🌍📚🗣️

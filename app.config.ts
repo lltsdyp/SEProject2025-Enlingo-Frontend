@@ -1,9 +1,9 @@
 import { ExpoConfig } from "expo/config";
 
 const config: ExpoConfig = {
-  name: "Enlingo",
+  name: "Vilingo",
   description: "The free, fun, and effective way to learn a language.",
-  slug: "enlingo",
+  slug: "vilingo",
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",

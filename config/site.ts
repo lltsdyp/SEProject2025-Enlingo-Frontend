@@ -9,9 +9,9 @@ export const siteConfig: SiteConfig = {
   description: "The free, fun, and effective way to learn a language.",
   url: "https://vilingo.vercel.app",
   author: {
-    name: "Kyaw Thet Paing",
-    username: "@ikyawthetpaing",
-    url: "https://ikyawthetpaing.vercel.app",
+    name: "Haoran Xu et al.",
+    username: "xhr",
+    url: "http://www.ecnu.edu.cn"
   },
   ogImage: `${ASSETS_URL}/public/og.png`,
   appleTouchIcon: `${ASSETS_URL}/public/apple-touch-icon.png`,
