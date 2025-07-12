@@ -4,6 +4,7 @@ const config: ExpoConfig = {
   name: "Vilingo",
   description: "The free, fun, and effective way to learn a language.",
   slug: "vilingo",
+  jsEngine: 'hermes',
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",

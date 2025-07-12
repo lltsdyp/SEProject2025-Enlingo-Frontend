@@ -3,13 +3,15 @@ import React, { useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Video, ResizeMode, AVPlaybackStatus } from "expo-av";
 import Parser from 'srt-parser-2';
+import { ExerciseItemProps, VideoExercise } from "@/types/course";
+import { ExerciseItemEvent } from "./exercise-item-event";
+import { Button } from "@/components/ui/button";
 
 // ... Props 和类型定义 (与之前相同) ...
-interface Props {
-  videoSource: string;
-  srtSource: string;
+interface Props extends ExerciseItemProps {
+  exercise: VideoExercise;
   onTranslateRequest: (text: string) => void;
-  containerStyle?: object; 
+  containerStyle?: object;
   videoStyle?: object;
   subtitleStyle?: object;
 }
@@ -21,24 +23,32 @@ interface Subtitle {
   text: string;
 }
 
-export function InteractiveVideoPlayer({
-  videoSource,
-  srtSource,
+// --- 组件实现 ---
+export function VideoItem({
+  exercise,
   onTranslateRequest,
   containerStyle,
   videoStyle,
-  subtitleStyle
+  subtitleStyle,
+  onContinue,
+  onResult,
 }: Props) {
   const videoRef = useRef<Video>(null);
   const [subtitles, setSubtitles] = useState<Subtitle[]>([]);
   const [currentSubtitle, setCurrentSubtitle] = useState<Subtitle | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // 新增：用于控制练习状态，与 TranslateItem 保持一致
+  const [isSuccess, setIsSuccess] = useState<boolean | null>(null);
+
+  // ---副作用 Hooks---
+
+  // 加载字幕文件
   useEffect(() => {
-    if (srtSource) {
+    if (exercise.srt) {
       const loadSubtitles = async () => {
         try {
-          const parsedSubtitles = await fetchAndParseSrt(srtSource);
+          const parsedSubtitles = await fetchAndParseSrt(exercise.srt);
           setSubtitles(parsedSubtitles);
           setError(null);
         } catch (err) {
@@ -49,9 +59,19 @@ export function InteractiveVideoPlayer({
       };
       loadSubtitles();
     }
-  }, [srtSource]);
+  }, [exercise.srt]);
 
-  // 新的点击单词处理函数
+  // 新增：当 isSuccess 状态改变时，调用 onResult 回调
+  useEffect(() => {
+    if (isSuccess !== null) {
+      onResult(isSuccess);
+    }
+  }, [isSuccess]);
+
+
+  // --- 事件处理函数 ---
+
+  // 点击字幕单词时触发
   const handleWordPress = (word: string) => {
     const cleanedWord = word.trim().replace(/[.,!?;:"]$/, '');
     if (!cleanedWord) {
@@ -61,54 +81,89 @@ export function InteractiveVideoPlayer({
     onTranslateRequest(cleanedWord);
   };
 
+
+
+  // 新增：当用户点击 "继续" 按钮时触发
+  const onPressCheck = () => {
+    // 重置状态
+    setIsSuccess(null);
+    // 将视频重置到开头
+    videoRef.current?.setPositionAsync(0);
+    // 通知父组件继续
+    onContinue();
+  };
+
+  // 视频播放状态更新时触发
   const onPlaybackStatusUpdate = (status: AVPlaybackStatus) => {
-    if (!status.isLoaded || !subtitles.length) {
+    if (!status.isLoaded) {
       if (currentSubtitle) setCurrentSubtitle(null);
       return;
     }
+
+    // 更新当前字幕
     const currentTimeMs = status.positionMillis;
     const activeSubtitle = subtitles.find(sub => {
       const startTimeMs = parseSrtTime(sub.startTime);
       const endTimeMs = parseSrtTime(sub.endTime);
       return currentTimeMs >= startTimeMs && currentTimeMs <= endTimeMs;
     });
+
     if (activeSubtitle?.id !== currentSubtitle?.id) {
       setCurrentSubtitle(activeSubtitle || null);
     }
+
+    // 新增：检查视频是否播放完毕
+    // 如果视频刚刚播放完，并且我们还没有设置结果，则将结果设为成功
+    if (status.didJustFinish && isSuccess === null) {
+      setIsSuccess(true);
+    }
   };
 
-  return (
-    <View style={[styles.container, containerStyle]}>
-      <Video
-        ref={videoRef}
-        source={{ uri: videoSource }}
-        style={[styles.video, videoStyle]}
-        useNativeControls
-        resizeMode={ResizeMode.CONTAIN}
-        onPlaybackStatusUpdate={onPlaybackStatusUpdate}
-      />
+  // --- 渲染逻辑 ---
 
-      <View style={styles.subtitleContainer}>
-        {/* 这是修改后的字幕渲染逻辑 */}
-        {currentSubtitle && (
-          <Text style={[styles.subtitleText, subtitleStyle]}>
-            {currentSubtitle.text.split(' ').map((word, index) => (
-              <Text
-                key={`${currentSubtitle.id}-${index}`}
-                onPress={() => handleWordPress(word)}
-                // 你甚至可以给可点击的单词添加一个不同的样式，以提示用户
-                // style={styles.clickableWord}
-              >
-                {word + ' '}
-              </Text>
-            ))}
-          </Text>
-        )}
-        {error && <Text style={styles.errorText}>{error}</Text>}
+  return (
+    // 使用与 TranslateItem 相同的布局结构，以确保 UI 一致性
+    <View style={{ flex: 1, justifyContent: 'space-between' }}>
+      <View style={[styles.container, containerStyle]}>
+        <Video
+          ref={videoRef}
+          source={{ uri: exercise.video.source.toString() }}
+          style={[styles.video, videoStyle]}
+          useNativeControls
+          resizeMode={ResizeMode.CONTAIN}
+          onPlaybackStatusUpdate={onPlaybackStatusUpdate}
+        />
+        <View style={styles.subtitleContainer}>
+          {currentSubtitle && (
+            <Text style={[styles.subtitleText, subtitleStyle]}>
+              {currentSubtitle.text.split(' ').map((word, index) => (
+                <Text
+                  key={`${currentSubtitle.id}-${index}`}
+                  onPress={() => handleWordPress(word)}
+                >
+                  {word + ' '}
+                </Text>
+              ))}
+            </Text>
+          )}
+          {error && <Text style={styles.errorText}>{error}</Text>}
+        </View>
       </View>
+
+      {/* 
+        统一的事件处理组件。
+        因为此练习没有手动“检查”按钮，所以我们不传递 onPressCheck。
+        当 isSuccess 不为 null 时，它会自动显示结果和“继续”按钮。
+      */}
+        <Button disabled={false} onPress={onPressCheck}>
+          Check
+        </Button>
     </View>
   );
 }
+
+
+// export function VideoExercise;
 
 // ------------------- 工具函数 -------------------
 
@@ -138,7 +193,7 @@ function parseSrtTime(time: string): number {
   const minutes = parseInt(parts[1], 10);
   const seconds = parseInt(parts[2], 10);
   const milliseconds = parseInt(parts[3], 10);
-  
+
   return hours * 3600000 + minutes * 60000 + seconds * 1000 + milliseconds;
 }
 
@@ -152,16 +207,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     borderRadius: 12, // 添加圆角以匹配你的设计
     overflow: 'hidden', // 确保子元素不会超出圆角边界
-
-        // --- 调试代码 ---
-    borderWidth: 2,
-    borderColor: 'red', // 容器的边框是红色的
   },
   video: {
     ...StyleSheet.absoluteFillObject,
-        // --- 调试代码 ---
-    borderWidth: 2,
-    borderColor: 'lime', // 视频组件的边框是绿色的
   },
   subtitleContainer: {
     position: 'absolute',

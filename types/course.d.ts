@@ -10,7 +10,7 @@ export interface ExerciseItemProps {
 export interface Exercise {
   id: number;
   question: Translations;
-  type: "flashCard" | "translate";
+  type: "flashCard" | "translate" | "video";
 }
 
 export interface ExerciseWord {
@@ -28,6 +28,11 @@ export interface FlashCardExercise extends Exercise {
   correctWordId: number;
 }
 
+export interface VideoExercise extends Exercise{
+  video: VideoSources;
+  srt:  string;
+}
+
 export interface TranslateExerciseWord extends ExerciseWord {}
 
 export type TranslateExerciseOption = {
@@ -41,7 +46,7 @@ export interface TranslateExercise extends Exercise {
   correctOrderIds: { [key in SupportedLanguageCode]: number[] };
 }
 
-export type ExerciseItemVariant = FlashCardExercise | TranslateExercise;
+export type ExerciseItemVariant = FlashCardExercise | TranslateExercise | VideoExercise;
 
 export type ExerciseSet = {
   id: number;
@@ -86,6 +91,10 @@ export type Course = {
 export type AudioSources = {
   [key in SupportedLanguageCode]: AVPlaybackSource;
 };
+
+export type VideoSources = {
+  source: AVPlaybackSource
+}
 
 export type CourseAudios = {
   [key: string]: AudioSources;

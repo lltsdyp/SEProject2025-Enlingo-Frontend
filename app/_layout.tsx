@@ -9,6 +9,12 @@ import { CourseProvider } from "@/context/course";
 import { LanguageCodeProvider } from "@/context/language";
 import { ProtectedRouteProvider } from "@/context/protected-route";
 import { ThemeProvider } from "@/context/theme";
+// 1. 导入 QueryClient 和 QueryClientProvider
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// 2. 创建一个 client 实例 (放在组件外部)
+const queryClient = new QueryClient();
+
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -50,8 +56,10 @@ export default function RootLayout() {
         <LanguageCodeProvider>
           <CourseProvider>
             <ProtectedRouteProvider>
-              <Stack screenOptions={{ headerShown: false }} />
-              <StatusBar />
+              <QueryClientProvider client={queryClient}>
+                <Stack screenOptions={{ headerShown: false }} />
+                <StatusBar />
+              </QueryClientProvider>
             </ProtectedRouteProvider>
           </CourseProvider>
         </LanguageCodeProvider>

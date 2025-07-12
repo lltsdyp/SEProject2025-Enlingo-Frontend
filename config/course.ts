@@ -49,16 +49,16 @@ export const courseConfig: CourseConfig = {
       label: "Characters",
       href: "/characters",
     },
-    {
-      icon: "shieldStar",
-      label: "Leaderboards",
-      href: "/leaderboards",
-    },
-    {
-      icon: "box",
-      label: "Quests",
-      href: "/quests",
-    },
+    // {
+    //   icon: "shieldStar",
+    //   label: "Leaderboards",
+    //   href: "/leaderboards",
+    // },
+    // {
+    //   icon: "box",
+    //   label: "Quests",
+    //   href: "/quests",
+    // },
     {
       icon: "profile",
       label: "Profile",
