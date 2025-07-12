@@ -17,26 +17,7 @@ import { Chapter } from "@/types/course";
 
 const CAMP = 16;
 const CIRCLE_RADUIS = 48;
-const VIDEO_COVER_HEIGHT = 120;
-const VIDEO_COVER_WIDTH = 200;
 
-const recommendedVideos = [
-  {
-    id: "1",
-    title: "Unit 1 Intro",
-    thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
-  },
-  {
-    id: "2",
-    title: "Unit 2 Basics",
-    thumbnail: "https://img.youtube.com/vi/oHg5SJYRHA0/hqdefault.jpg",
-  },
-  {
-    id: "3",
-    title: "Unit 3 Advanced",
-    thumbnail: "https://img.youtube.com/vi/ZZ5LpwO-An4/hqdefault.jpg",
-  },
-];
 
 export default function Learn() {
   const { languageCode } = useLanguageCode();
@@ -202,48 +183,14 @@ export default function Learn() {
               {currentSection.title[languageCode]}
             </Text>
           </View>
-
-          {/* 横向滑动视频封面区域 */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{
-              paddingHorizontal: layouts.padding,
-              paddingBottom: layouts.padding,
-            }}
-          >
-            {recommendedVideos.map((video) => (
-              <TouchableOpacity
-                key={video.id}
-                style={{
-                  width: VIDEO_COVER_WIDTH,
-                  height: VIDEO_COVER_HEIGHT,
-                  marginRight: layouts.padding,
-                  borderRadius: 8,
-                  overflow: "hidden",
-                  backgroundColor: "#eee",
-                }}
-                onPress={() => {
-                  // 这里可以添加点击事件，比如跳转视频播放页
-                  console.log("点击视频", video.title);
-                }}
-              >
-                <Image
-                  source={{ uri: video.thumbnail }}
-                  style={{ width: "100%", height: "100%" }}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
         </View>
 
         <ScrollView
           contentContainerStyle={{
             paddingTop:
               breakpoint == "sm"
-                ? headerHeight + VIDEO_COVER_HEIGHT + layouts.padding
-                : headerHeight + VIDEO_COVER_HEIGHT + layouts.padding * 3,
+                ? headerHeight + layouts.padding
+                : headerHeight + layouts.padding * 3,
             paddingBottom: layouts.padding * 2,
             gap: layouts.padding * 4,
           }}
