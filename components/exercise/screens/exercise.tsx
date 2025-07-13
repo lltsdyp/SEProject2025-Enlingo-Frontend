@@ -17,14 +17,20 @@ import { useCourse } from "@/context/course";
 import { useTheme } from "@/context/theme";
 import { useAudio } from "@/hooks/audio";
 import { calculatePrecentage, shuffleArray } from "@/lib/utils";
-import { ExerciseSet } from "@/types/course";
+import { ExerciseSet, ExerciseSetId } from "@/types/course";
+import { useExercise } from "@/content/courses/data";
 
 interface Props {
-  exercise: ExerciseSet;
+  exerciseId: ExerciseSetId;
   increaseProgress: boolean;
 }
 
-export default function ExerciseScreen({ exercise, increaseProgress }: Props) {
+export default function ExerciseScreen({ exerciseId, increaseProgress }: Props) {
+  const {
+    exercise,
+    isLoading,
+    isError
+  } = useExercise(exerciseId);
   const shuffledExerciseItems = useMemo(
     () => shuffleArray(exercise.items),
     [exercise.items]
@@ -32,6 +38,7 @@ export default function ExerciseScreen({ exercise, increaseProgress }: Props) {
   const totalExerciseItems = shuffledExerciseItems.length;
 
   const { courseId } = useCourse();
+  console.info(courseId);
   const { accent, foreground, mutedForeground } = useTheme();
   const breakpoint = useBreakpoint();
 

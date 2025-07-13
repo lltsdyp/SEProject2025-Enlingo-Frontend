@@ -12,32 +12,32 @@
  */
 
 
-import { VideoExercise } from './video-exercise';
+import { VideoExerciseResponse } from './video-exercise-response';
 
 /**
  * 
  * @export
- * @interface InlineResponse2003
+ * @interface ExerciseInfoResponse
  */
-export interface InlineResponse2003 {
+export interface ExerciseInfoResponse {
     /**
      * 完成一次练习获取的经验值
      * @type {number}
-     * @memberof InlineResponse2003
+     * @memberof ExerciseInfoResponse
      */
     xp: number;
     /**
      * 当前练习的难度(easy/medium/hard）
      * @type {string}
-     * @memberof InlineResponse2003
+     * @memberof ExerciseInfoResponse
      */
     difficulty: string;
     /**
      * 当前练习包含的所有项目
-     * @type {Array<VideoExercise | object>}
-     * @memberof InlineResponse2003
+     * @type {Array<VideoExerciseResponse | object>}
+     * @memberof ExerciseInfoResponse
      */
-    items: Array<VideoExercise | object>;
+    items: Array<VideoExerciseResponse | object>;
 }
 
 

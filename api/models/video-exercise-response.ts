@@ -16,31 +16,31 @@
 /**
  * 
  * @export
- * @interface VideoExercise
+ * @interface VideoExerciseResponse
  */
-export interface VideoExercise {
+export interface VideoExerciseResponse {
     /**
      * 类型标识符，必须为Video
      * @type {string}
-     * @memberof VideoExercise
+     * @memberof VideoExerciseResponse
      */
     type: string;
     /**
      * 这个实体的id
      * @type {number}
-     * @memberof VideoExercise
+     * @memberof VideoExerciseResponse
      */
     id: number;
     /**
      * 相应的视频的URL
      * @type {string}
-     * @memberof VideoExercise
+     * @memberof VideoExerciseResponse
      */
     video: string;
     /**
      * 相应的视频对应的字幕文件（SRT格式）的URL
      * @type {string}
-     * @memberof VideoExercise
+     * @memberof VideoExerciseResponse
      */
     srt: string;
 }

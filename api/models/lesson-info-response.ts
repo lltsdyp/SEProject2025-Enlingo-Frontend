@@ -16,21 +16,27 @@
 /**
  * 
  * @export
- * @interface InlineResponse2002
+ * @interface LessonInfoResponse
  */
-export interface InlineResponse2002 {
+export interface LessonInfoResponse {
+    /**
+     * 课程的id
+     * @type {number}
+     * @memberof LessonInfoResponse
+     */
+    id: number;
     /**
      * 课程的描述
      * @type {string}
-     * @memberof InlineResponse2002
+     * @memberof LessonInfoResponse
      */
     description: string;
     /**
      * 当前课程下的所有练习题id列表
-     * @type {Array<string>}
-     * @memberof InlineResponse2002
+     * @type {Array<number>}
+     * @memberof LessonInfoResponse
      */
-    exercises: Array<string>;
+    exercises: Array<number>;
 }
 
 

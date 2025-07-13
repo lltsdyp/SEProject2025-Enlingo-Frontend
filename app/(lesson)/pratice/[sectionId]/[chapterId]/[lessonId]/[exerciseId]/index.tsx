@@ -24,7 +24,7 @@ export default function Practice() {
         title="Pratice"
         description="Pratice a lesson every day to keep your streak."
       />
-      <ExerciseScreen exercise={exercise} increaseProgress={false} />
+      <ExerciseScreen exerciseId={exercise} increaseProgress={false} />
     </>
   );
 }

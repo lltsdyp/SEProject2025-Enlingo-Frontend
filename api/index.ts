@@ -17,7 +17,16 @@ export * from "./configuration";
 import axios from "axios";
 import { DefaultApi } from "./api";
 import { Configuration } from "./configuration";
+import { Chapter, ExerciseSet, Lesson, Section, VideoExercise } from "@/types/course";
+import { SectionListResponse } from "./models/section-list-response";
+import { ChapterInfoResponse, ExerciseInfoResponse, LessonInfoResponse, SectionInfoResponse,} from "./models";
+import { Translations } from "@/types";
 
+const toTranslations = (text: string): Translations => ({
+  en: text,
+  ja: text,
+  cn: text,
+});
 
 // 1. 创建一个自定义的 axios 实例，以便添加拦截器等
 const axiosInstance = axios.create({
@@ -27,9 +36,136 @@ const axiosInstance = axios.create({
 // 2. 创建 API 配置对象
 const apiConfig = new Configuration({
   // 这个 basePath 会覆盖生成代码中的默认值
-  basePath: 'https://your-api.vilingo.com', 
+  basePath: 'https://your-api.vilingo.com',
 });
 
 // 3. 实例化你的 API 客户端，并传入配置和 axios 实例
 //    这就是你将在整个应用中使用的 API 对象
 export const apiClient = new DefaultApi(apiConfig, undefined, axiosInstance);
+
+// getSections 现在将直接返回完整的嵌套对象（除了 Lesson.exercises）
+export const getSections = async (lang: string): Promise<Section[]> => {
+  try {
+    // const response = await apiClient.contentLessonGet(lessonId);
+    const response = { data: require('@/mock/content/sections.json') };
+
+
+    // 假设 mockSectionsRaw.sections 已经是完全嵌套的 Chapter 和 Lesson 对象
+    const sections: Section[] = response.data.sections.map((rawSection: SectionInfoResponse) => {
+      const chapters: Chapter[] = rawSection.chapters.map((rawChapter: ChapterInfoResponse) => {
+        const lessons: Lesson[] = rawChapter.lessons.map((rawLesson: LessonInfoResponse) => {
+          // Lesson.exercises 保持为 number[]
+          return {
+            id: rawLesson.id,
+            description: toTranslations(rawLesson.description), // 转换描述
+            exercises: rawLesson.exercises, // 保持为 number[]
+          };
+        });
+        return {
+          id: rawChapter.id,
+          title: toTranslations(rawChapter.title), // 转换标题
+          description: toTranslations(rawChapter.description), // 转换描述
+          lessons: lessons,
+        };
+      });
+      return {
+        id: rawSection.id,
+        title: toTranslations(rawSection.title), // 转换标题
+        chapters: chapters,
+      };
+    });
+
+    return sections;
+  } catch (error) {
+    console.error("Error in getSections:", error);
+    throw error;
+  }
+};
+
+export const getChapterById = async (id: number): Promise<Chapter> => {
+  try {
+    // const response = await apiClient.contentChapterGet(id);
+    const response = { data: require('@/mock/content/chapter.json') };
+    const chapter: Chapter = {
+      id: id,
+      title: {
+        en: response.data.title,
+        ja: "セクション 1: ルーキー",
+        cn: "第 1 部分：新秀",
+      }, // TODO: Simplify
+      description: {
+        en: response.data.description,
+        ja: "このセクションでは、あなたの新しい知識を学びます。",
+        cn: "在这个部分，您将学习新的知识。",
+      },
+      lessons: response.data.lessons
+    }
+    return chapter;
+  } catch (error) {
+    console.error("Error in getChapter:", error);
+    throw error;
+  }
+}
+
+/**
+ * 根据 ID 获取 Lesson 的详细信息
+ * @param lessonId
+ */
+export const getLessonById = async (lessonId: number): Promise<Lesson> => {
+  try {
+    // 假设 contentChapterGet 是获取 Lesson 的方法，如果不是请替换
+    // const response = await apiClient.contentLessonGet(lessonId);
+    const response = { data: require('@/mock/content/lesson.json') };
+
+    // 在这里进行数据转换，适配成你的 Lesson 类型
+    const transformedLesson: Lesson = {
+      id: lessonId,
+      description: {
+        en: response.data.description,
+        ja: "セクション 1: ルーキー",
+        cn: "第 1 部分：新秀",
+      }, // TODO: Simplify
+      exercises: response.data.exercises,
+    };
+    return transformedLesson;
+  } catch (error) {
+    console.error("Error in getLessonById:", error);
+    throw error;
+  }
+};
+
+/**
+ * 根据 ID 获取 ExerciseSet 的详细信息 (如果需要的话)
+ * @param exerciseId
+ */
+export const getExerciseSetById = async (exerciseId: number): Promise<ExerciseSet> => {
+  // const response = await apiClient.contentExerciseGet(exerciseId);
+  const response = { data: require('@/mock/content/exercise.json') };
+  const mappedItems = response.data.items.map((item: ExerciseInfoResponse | object) => {
+    if ('id' in item && 'type' in item) {
+      if (item.type === 'video' && 'video' in item && 'srt' in item && 'subtitle' in item) {
+        return {
+          id: item.id,
+          type: 'video' as const,
+          question: {
+            en: "TODO",
+            ja: "TODO",
+            cn: "TODO"
+          },
+          video: { source: { uri: item.video } },
+          srt: item.srt,
+        }
+      }
+    } else {
+      throw new Error('Invalid exercise item');
+    }
+  }).filter((item: object | null | undefined): item is Exclude<typeof item, null | undefined> => item !== null && item !== undefined); // 移除无效项
+
+  const transformedExerciseSet: ExerciseSet = {
+    id: exerciseId,
+    xp: response.data.xp,
+    difficulty: response.data.difficulty,
+    items: mappedItems,
+  };
+  return transformedExerciseSet;
+}

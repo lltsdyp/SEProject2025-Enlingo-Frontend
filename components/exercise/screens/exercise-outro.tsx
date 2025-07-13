@@ -7,7 +7,7 @@ import { Shell } from "@/components/shell";
 import { Text, View } from "@/components/themed";
 import { Button } from "@/components/ui/button";
 import { layouts } from "@/constants/layouts";
-import { nextProgress } from "@/content/courses/data";
+// import { nextProgress } from "@/content/courses/data";
 import { useBreakpoint } from "@/context/breakpoints";
 import { useCourse } from "@/context/course";
 import { useTheme } from "@/context/theme";
@@ -50,10 +50,10 @@ export default function LessonOutrolayout(props: Props) {
 
   const onContinue = () => {
     if (props.increaseProgress) {
-      const nextCourseProgress = nextProgress(courseProgress);
-      if (nextCourseProgress) {
-        setCourseProgress(nextCourseProgress);
-      }
+      // const nextCourseProgress = nextProgress(courseProgress);
+      // if (nextCourseProgress) {
+      //   setCourseProgress(nextCourseProgress);
+      // }
     }
     router.push("/learn");
   };

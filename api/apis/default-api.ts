@@ -19,19 +19,17 @@ import { Configuration } from '../configuration';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } from '../base';
 // @ts-ignore
-import { InlineResponse200 } from '../models';
+import { ChapterInfoResponse } from '../models';
 // @ts-ignore
-import { InlineResponse2001 } from '../models';
+import { ExerciseInfoResponse } from '../models';
 // @ts-ignore
-import { InlineResponse2002 } from '../models';
+import { LessonInfoResponse } from '../models';
 // @ts-ignore
-import { InlineResponse2003 } from '../models';
+import { RecommendVideoFetchResponse } from '../models';
 // @ts-ignore
-import { InlineResponse2004 } from '../models';
+import { SectionListResponse } from '../models';
 // @ts-ignore
-import { InlineResponse2005 } from '../models';
-// @ts-ignore
-import { InlineResponse2006 } from '../models';
+import { WordlistFetchInfoResponse } from '../models';
 /**
  * DefaultApi - axios parameter creator
  * @export
@@ -68,7 +66,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search=null;
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -107,7 +105,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search=null;
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -146,7 +144,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search=null;
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -157,7 +155,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 获取给定语言的所有章节的列表
-         * @summary 获取章节列表（新）
+         * @summary 获取章节列表
          * @param {string} lang 指定语言参数
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -185,7 +183,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search=null;
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -229,77 +227,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: globalImportUrl.format(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 根据提供的视频id，提供视频相对应的url
-         * @summary 获取视频url
-         * @param {number} [id] 对应的视频id
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        videoRawGet: async (id?: number, options: any = {}): Promise<RequestArgs> => {
-            const localVarPath = `/video/raw`;
-            const localVarUrlObj = globalImportUrl.parse(localVarPath, true);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (id !== undefined) {
-                localVarQueryParameter['id'] = id;
-            }
-
-
-    
-            localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
-            // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: globalImportUrl.format(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 根据提供的视频id，提供视频相对应的字幕文件url
-         * @summary 获取字幕文件url
-         * @param {number} [id] 对应的视频id
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        videoSubtitleGet: async (id?: number, options: any = {}): Promise<RequestArgs> => {
-            const localVarPath = `/video/subtitle`;
-            const localVarUrlObj = globalImportUrl.parse(localVarPath, true);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (id !== undefined) {
-                localVarQueryParameter['id'] = id;
-            }
-
-
-    
-            localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
-            // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search=null;
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -338,7 +266,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search=null;
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -377,7 +305,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search=null;
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -421,7 +349,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search=null;
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -446,7 +374,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async contentChapterGet(id: number, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse2003>> {
+        async contentChapterGet(id: number, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ChapterInfoResponse>> {
             const localVarAxiosArgs = await DefaultApiAxiosParamCreator(configuration).contentChapterGet(id, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -460,7 +388,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async contentExerciseGet(id: number, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse2005>> {
+        async contentExerciseGet(id: number, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ExerciseInfoResponse>> {
             const localVarAxiosArgs = await DefaultApiAxiosParamCreator(configuration).contentExerciseGet(id, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -474,7 +402,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async contentLessonGet(id: number, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse2004>> {
+        async contentLessonGet(id: number, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LessonInfoResponse>> {
             const localVarAxiosArgs = await DefaultApiAxiosParamCreator(configuration).contentLessonGet(id, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -483,12 +411,12 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 获取给定语言的所有章节的列表
-         * @summary 获取章节列表（新）
+         * @summary 获取章节列表
          * @param {string} lang 指定语言参数
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async contentSectionsGet(lang: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse2002>> {
+        async contentSectionsGet(lang: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SectionListResponse>> {
             const localVarAxiosArgs = await DefaultApiAxiosParamCreator(configuration).contentSectionsGet(lang, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -503,36 +431,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async recommendGetGet(limit: number, before?: number, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse2006>> {
+        async recommendGetGet(limit: number, before?: number, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<RecommendVideoFetchResponse>> {
             const localVarAxiosArgs = await DefaultApiAxiosParamCreator(configuration).recommendGetGet(limit, before, options);
-            return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
-                const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
-                return axios.request(axiosRequestArgs);
-            };
-        },
-        /**
-         * 根据提供的视频id，提供视频相对应的url
-         * @summary 获取视频url
-         * @param {number} [id] 对应的视频id
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async videoRawGet(id?: number, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse2001>> {
-            const localVarAxiosArgs = await DefaultApiAxiosParamCreator(configuration).videoRawGet(id, options);
-            return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
-                const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
-                return axios.request(axiosRequestArgs);
-            };
-        },
-        /**
-         * 根据提供的视频id，提供视频相对应的字幕文件url
-         * @summary 获取字幕文件url
-         * @param {number} [id] 对应的视频id
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async videoSubtitleGet(id?: number, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse2001>> {
-            const localVarAxiosArgs = await DefaultApiAxiosParamCreator(configuration).videoSubtitleGet(id, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
                 return axios.request(axiosRequestArgs);
@@ -574,7 +474,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async wordlistGetGet(limit: number, before?: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse200>> {
+        async wordlistGetGet(limit: number, before?: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WordlistFetchInfoResponse>> {
             const localVarAxiosArgs = await DefaultApiAxiosParamCreator(configuration).wordlistGetGet(limit, before, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -597,7 +497,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        contentChapterGet(id: number, options?: any): AxiosPromise<InlineResponse2003> {
+        contentChapterGet(id: number, options?: any): AxiosPromise<ChapterInfoResponse> {
             return DefaultApiFp(configuration).contentChapterGet(id, options).then((request) => request(axios, basePath));
         },
         /**
@@ -607,7 +507,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        contentExerciseGet(id: number, options?: any): AxiosPromise<InlineResponse2005> {
+        contentExerciseGet(id: number, options?: any): AxiosPromise<ExerciseInfoResponse> {
             return DefaultApiFp(configuration).contentExerciseGet(id, options).then((request) => request(axios, basePath));
         },
         /**
@@ -617,17 +517,17 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        contentLessonGet(id: number, options?: any): AxiosPromise<InlineResponse2004> {
+        contentLessonGet(id: number, options?: any): AxiosPromise<LessonInfoResponse> {
             return DefaultApiFp(configuration).contentLessonGet(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 获取给定语言的所有章节的列表
-         * @summary 获取章节列表（新）
+         * @summary 获取章节列表
          * @param {string} lang 指定语言参数
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        contentSectionsGet(lang: string, options?: any): AxiosPromise<InlineResponse2002> {
+        contentSectionsGet(lang: string, options?: any): AxiosPromise<SectionListResponse> {
             return DefaultApiFp(configuration).contentSectionsGet(lang, options).then((request) => request(axios, basePath));
         },
         /**
@@ -638,28 +538,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        recommendGetGet(limit: number, before?: number, options?: any): AxiosPromise<InlineResponse2006> {
+        recommendGetGet(limit: number, before?: number, options?: any): AxiosPromise<RecommendVideoFetchResponse> {
             return DefaultApiFp(configuration).recommendGetGet(limit, before, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 根据提供的视频id，提供视频相对应的url
-         * @summary 获取视频url
-         * @param {number} [id] 对应的视频id
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        videoRawGet(id?: number, options?: any): AxiosPromise<InlineResponse2001> {
-            return DefaultApiFp(configuration).videoRawGet(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 根据提供的视频id，提供视频相对应的字幕文件url
-         * @summary 获取字幕文件url
-         * @param {number} [id] 对应的视频id
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        videoSubtitleGet(id?: number, options?: any): AxiosPromise<InlineResponse2001> {
-            return DefaultApiFp(configuration).videoSubtitleGet(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 添加一个单词到用户的生词本中
@@ -689,7 +569,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        wordlistGetGet(limit: number, before?: string, options?: any): AxiosPromise<InlineResponse200> {
+        wordlistGetGet(limit: number, before?: string, options?: any): AxiosPromise<WordlistFetchInfoResponse> {
             return DefaultApiFp(configuration).wordlistGetGet(limit, before, options).then((request) => request(axios, basePath));
         },
     };
@@ -740,7 +620,7 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 获取给定语言的所有章节的列表
-     * @summary 获取章节列表（新）
+     * @summary 获取章节列表
      * @param {string} lang 指定语言参数
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -761,30 +641,6 @@ export class DefaultApi extends BaseAPI {
      */
     public recommendGetGet(limit: number, before?: number, options?: any) {
         return DefaultApiFp(this.configuration).recommendGetGet(limit, before, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 根据提供的视频id，提供视频相对应的url
-     * @summary 获取视频url
-     * @param {number} [id] 对应的视频id
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DefaultApi
-     */
-    public videoRawGet(id?: number, options?: any) {
-        return DefaultApiFp(this.configuration).videoRawGet(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 根据提供的视频id，提供视频相对应的字幕文件url
-     * @summary 获取字幕文件url
-     * @param {number} [id] 对应的视频id
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DefaultApi
-     */
-    public videoSubtitleGet(id?: number, options?: any) {
-        return DefaultApiFp(this.configuration).videoSubtitleGet(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

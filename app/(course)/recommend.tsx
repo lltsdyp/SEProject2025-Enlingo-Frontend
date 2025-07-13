@@ -4,65 +4,79 @@ import { MasonryFlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import { Image } from 'expo-image';
 
 // --- 定义数据类型 (这是修复问题的核心步骤) ---
-interface QuestVideo {
+interface RecommendVideo {
   id: string;
   title: string;
-  thumbnail: string;
+  cover: string;
   height: number;
+  eid: number;
+}
+
+interface ApiResponse {
+  data: RecommendVideo[];
+  count: number;
+  hasNextPage: boolean;
+  nextCursor: string | null;
 }
 
 // --- 你的视频数据 ---
 // 明确告诉 TypeScript，这个数组里的每一项都符合 QuestVideo 类型
-const recommendedVideos: QuestVideo[] = [
+const recommendedVideos: RecommendVideo[] = [
   {
     id: "1",
     title: "Unit 1 Intro - A Great Start",
-    thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+    cover: "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
     // 为了瀑布流效果，我们可以给每个卡片一个不同的高度，模拟真实场景
     // 在真实应用中，这个高度可能由图片宽高比决定
     height: 220, 
+    eid:1
   },
   {
     id: "2",
     title: "Unit 2 Basics - Learn the Fundamentals of Everything and More",
-    thumbnail: "https://img.youtube.com/vi/oHg5SJYRHA0/hqdefault.jpg",
+    cover: "https://img.youtube.com/vi/oHg5SJYRHA0/hqdefault.jpg",
     height: 280,
+    eid:1
   },
   {
     id: "3",
     title: "Unit 3 Advanced Topics",
-    thumbnail: "https://img.youtube.com/vi/ZZ5LpwO-An4/hqdefault.jpg",
+    cover: "https://img.youtube.com/vi/ZZ5LpwO-An4/hqdefault.jpg",
     height: 240,
+    eid:1
   },
   // 为了更好地展示瀑布流效果，我为你多加几条数据
   {
     id: "4",
     title: "Reviewing Previous Concepts",
-    thumbnail: "https://img.youtube.com/vi/3tmd-ClpJxA/hqdefault.jpg",
+    cover: "https://img.youtube.com/vi/3tmd-ClpJxA/hqdefault.jpg",
     height: 260,
+    eid:1
   },
   {
     id: "5",
     title: "Special Guest Lecture: The Future of Tech",
-    thumbnail: "https://img.youtube.com/vi/jNQXAC9IVRw/hqdefault.jpg",
+    cover: "https://img.youtube.com/vi/jNQXAC9IVRw/hqdefault.jpg",
     height: 230,
+    eid:1
   },
   {
     id: "6",
     title: "Final Project Guidelines",
-    thumbnail: "https://img.youtube.com/vi/C0DPdy98e4c/hqdefault.jpg",
+    cover: "https://img.youtube.com/vi/C0DPdy98e4c/hqdefault.jpg",
     height: 270,
+    eid:1
   },
 ];
 
 
 // --- 卡片组件定义 ---
 // 明确告诉 TypeScript，item prop 的类型是 QuestVideo
-const QuestCard = ({ item }: { item: QuestVideo }) => {
+const QuestCard = ({ item }: { item: RecommendVideo }) => {
   return (
     <Pressable style={[styles.cardContainer, { height: item.height }]}>
       <Image 
-        source={{ uri: item.thumbnail }} 
+        source={{ uri: item.cover }} 
         style={styles.thumbnail}
         contentFit="cover"
         transition={300}
@@ -80,7 +94,7 @@ export default function Quests() {
   
   // --- 为 renderItem 函数定义类型 ---
   // 这是最规范的做法
-  const renderQuestItem = ({ item }: ListRenderItemInfo<QuestVideo>) => (
+  const renderQuestItem = ({ item }: ListRenderItemInfo<RecommendVideo>) => (
     <QuestCard item={item} />
   );
 
@@ -88,7 +102,7 @@ export default function Quests() {
     <View style={styles.container}>
       <MasonryFlashList
         data={recommendedVideos}
-        keyExtractor={(item: QuestVideo) => item.id} // 也可以在这里给 item 加类型
+        keyExtractor={(item: RecommendVideo) => item.id} // 也可以在这里给 item 加类型
         numColumns={2}
         renderItem={renderQuestItem} // <--- 关键修改 2: 使用带类型的函数
         estimatedItemSize={250}

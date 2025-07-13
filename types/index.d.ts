@@ -4,14 +4,14 @@ import { Icons } from "@/components/icons";
 
 export type SupportedLanguageCode =
   | "en"
-  | "my"
+  // | "my"
   | "ja"
-  | "th"
-  | "es"
-  | "fr"
+  // | "th"
+  // | "es"
+  // | "fr"
   | "cn"
-  | "ru"
-  | "hi";
+  // | "ru"
+  // | "hi";
 
 export type Languages = {
   [key in SupportedLanguageCode]: { name: string; flag: string };

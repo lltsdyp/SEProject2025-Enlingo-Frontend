@@ -48,6 +48,8 @@ export interface TranslateExercise extends Exercise {
 
 export type ExerciseItemVariant = FlashCardExercise | TranslateExercise | VideoExercise;
 
+export type ExerciseSetId={id: number};
+
 export type ExerciseSet = {
   id: number;
   xp: number;
@@ -58,7 +60,7 @@ export type ExerciseSet = {
 export type Lesson = {
   id: number;
   description: Translations;
-  exercises: ExerciseSet[];
+  exercises: number[];
 };
 
 export type Chapter = {

@@ -8,7 +8,7 @@ import { Metadata } from "@/components/metadata";
 import { Text, View } from "@/components/themed";
 import { Button } from "@/components/ui/button";
 import { layouts } from "@/constants/layouts";
-import { courseContent } from "@/content/courses/data";
+import { useCourseContent } from "@/content/courses/data";
 import { useBreakpoint } from "@/context/breakpoints";
 import { useCourse } from "@/context/course";
 import { useLanguageCode } from "@/context/language";
@@ -24,6 +24,16 @@ export default function Learn() {
   const { courseId, courseProgress } = useCourse();
   const { mutedForeground, border, accent } = useTheme();
   const breakpoint = useBreakpoint();
+  const courseContent = useCourseContent();
+  console.log("learn page");
+  console.log(courseContent);
+  if (!courseContent) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>加载中...</Text>
+      </View>
+    );
+  }
 
   const [headerHeight, setHeaderHeight] = useState(0);
 
@@ -102,6 +112,7 @@ export default function Learn() {
             (isCurrentChapter && lessonIndex < courseProgress.lessonId) ||
             chapterIndex < courseProgress.chapterId;
           const currentExercise = lession.exercises[courseProgress.exerciseId];
+          console.log("isCurrentChap:",isCurrentChapter,"\nisCurrentLesson:",isCurrentLesson,"\ncurrentExercise:",currentExercise);
 
           if (!currentExercise) return null;
 
@@ -110,7 +121,7 @@ export default function Learn() {
               key={lessonIndex}
               index={lessonIndex}
               circleRadius={CIRCLE_RADUIS}
-              currentExercise={currentExercise}
+              exerciseSetId={currentExercise}
               isCurrentLesson={isCurrentLesson}
               isFinishedLesson={isFinishedLesson}
               lessonDescription={lession.description[languageCode]}
@@ -168,8 +179,8 @@ export default function Learn() {
                 breakpoint === "sm"
                   ? 0
                   : breakpoint === "md"
-                  ? layouts.padding * 2
-                  : layouts.padding * 3,
+                    ? layouts.padding * 2
+                    : layouts.padding * 3,
             }}
           >
             <Text

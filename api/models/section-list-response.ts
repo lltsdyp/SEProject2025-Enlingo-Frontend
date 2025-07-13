@@ -12,20 +12,20 @@
  */
 
 
-import { InlineResponse200Sections } from './inline-response200-sections';
+import { SectionInfoResponse } from './section-info-response';
 
 /**
  * 
  * @export
- * @interface InlineResponse200
+ * @interface SectionListResponse
  */
-export interface InlineResponse200 {
+export interface SectionListResponse {
     /**
      * 章节列表
-     * @type {Array<InlineResponse200Sections>}
-     * @memberof InlineResponse200
+     * @type {Array<SectionInfoResponse>}
+     * @memberof SectionListResponse
      */
-    sections: Array<InlineResponse200Sections>;
+    sections: Array<SectionInfoResponse>;
 }
 
 

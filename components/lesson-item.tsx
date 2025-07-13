@@ -1,23 +1,31 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { router } from "expo-router";
-import { Pressable, PressableProps } from "react-native";
-import Popover from "react-native-popover-view/dist/Popover";
+import {
+  Pressable,
+  PressableProps,
+  StyleSheet, // 引入 StyleSheet for LessonItem's own styles
+} from "react-native";
+import Popover from "react-native-popover-view/dist/Popover"; // 确保导入路径正确
 
 import { Icon } from "@/components/icons";
 import { Text, View } from "@/components/themed";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button"; // 不再需要，已移入 LessonPopoverContent
 import { layouts } from "@/constants/layouts";
 import { useTheme } from "@/context/theme";
-import { CourseProgression, ExerciseSet } from "@/types/course";
+// 导入新的 Popover 内容组件
+import { PopoverItem } from './popover-item'; // 确保路径正确
 
-interface Props extends PressableProps {
+import { CourseProgression, ExerciseSet } from "@/types/course"; // 确保导入 ExerciseSet
+
+
+interface LessonItemProps extends PressableProps {
   circleRadius: number;
   isCurrentLesson: boolean;
   isFinishedLesson: boolean;
   index: number;
   lessonDescription: string;
   totalExercise: number;
-  currentExercise: ExerciseSet;
+  exerciseSetId: number; // <-- 新增，从 Learn 或 ChapterDisplay 传递
   courseProgression: CourseProgression;
 }
 
@@ -28,30 +36,20 @@ export function LessonItem({
   index,
   lessonDescription,
   totalExercise,
-  currentExercise,
+  exerciseSetId, // 接收新的 prop
   courseProgression,
   ...props
-}: Props) {
+}: LessonItemProps) {
   const {
-    border,
     background,
     primary,
     primaryForeground,
-    foreground,
     mutedForeground,
     muted,
   } = useTheme();
-  const isNotFinishedLesson = !isFinishedLesson && !isCurrentLesson;
   const [isVisiable, setIsVisiable] = useState(false);
   const openPopover = () => setIsVisiable(true);
   const closePopover = () => setIsVisiable(false);
-
-  const {
-    sectionId: sectionId,
-    chapterId: chapterId,
-    lessonId: lessonId,
-    exerciseId: exerciseId,
-  } = courseProgression;
 
   return (
     <Popover
@@ -59,10 +57,10 @@ export function LessonItem({
       onRequestClose={closePopover}
       popoverStyle={{
         borderRadius: layouts.padding,
-        backgroundColor: border,
+        backgroundColor: background, // Popover 背景色
       }}
       backgroundStyle={{
-        backgroundColor: background,
+        backgroundColor: 'black',
         opacity: 0.5,
       }}
       from={
@@ -75,17 +73,15 @@ export function LessonItem({
             }}
           >
             <View
-              style={{
-                width: "100%",
-                aspectRatio: 1,
-                borderRadius: 9999,
-                backgroundColor:
-                  isCurrentLesson || isFinishedLesson || index === 0
-                    ? primary
-                    : mutedForeground,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
+              style={[ // 使用 StyleSheet 定义的样式
+                styles.circle,
+                {
+                  backgroundColor:
+                    isCurrentLesson || isFinishedLesson || index === 0
+                      ? primary
+                      : mutedForeground,
+                },
+              ]}
             >
               {isCurrentLesson ? (
                 <Icon name="star" size={32} color={primaryForeground} />
@@ -101,82 +97,28 @@ export function LessonItem({
         </Pressable>
       }
     >
-      <View
-        style={{
-          padding: layouts.padding,
-          borderRadius: layouts.padding,
-          width: 300,
-          borderWidth: layouts.borderWidth,
-          borderColor: border,
-          gap: layouts.padding,
-        }}
-      >
-        <View
-          style={{
-            flexDirection: "row",
-            gap: layouts.padding,
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: "bold",
-              color: isNotFinishedLesson ? mutedForeground : foreground,
-            }}
-          >
-            {lessonDescription}
-          </Text>
-          {isCurrentLesson && (
-            <View
-              style={{
-                paddingVertical: layouts.padding / 2,
-                paddingHorizontal: layouts.padding,
-                borderRadius: layouts.padding / 2,
-                backgroundColor: muted,
-              }}
-            >
-              <Text
-                style={{
-                  textTransform: "uppercase",
-                  fontWeight: "bold",
-                  color: mutedForeground,
-                }}
-              >
-                {currentExercise.difficulty}
-              </Text>
-            </View>
-          )}
-        </View>
-        <Text style={{ color: mutedForeground }}>
-          {isFinishedLesson
-            ? "Prove your proficiency with Legendary"
-            : isNotFinishedLesson
-            ? "Complete all levels above to unlock this!"
-            : `Exercise ${currentExercise.id} of ${totalExercise}`}
-        </Text>
-        <Button
-          onPress={() => {
-            closePopover();
-            if (isFinishedLesson) {
-              router.push(
-                `/pratice/${sectionId}/${chapterId}/${lessonId}/${exerciseId}`
-              );
-            } else {
-              router.push("/lesson");
-            }
-          }}
-          disabled={isNotFinishedLesson}
-        >
-          {isFinishedLesson
-            ? `Pratice +${currentExercise.xp / 2} xp`
-            : isNotFinishedLesson
-            ? "Locked"
-            : `Start +${currentExercise.xp} xp`}
-        </Button>
-      </View>
+      {/* 渲染新的 Popover 内容组件 */}
+      <PopoverItem
+        exerciseSetId={exerciseSetId} // 传递 exerciseSet ID
+        lessonDescription={lessonDescription}
+        totalExercise={totalExercise}
+        isCurrentLesson={isCurrentLesson}
+        isFinishedLesson={isFinishedLesson}
+        courseProgression={courseProgression}
+        closePopover={closePopover}
+      />
     </Popover>
   );
 }
+
+// --- Styles for LessonItem ---
+const styles = StyleSheet.create({
+  circle: {
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: 9999,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  // 移除所有 Popover 内容相关的样式，因为它们现在属于 LessonPopoverContent 组件
+});

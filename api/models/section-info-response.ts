@@ -12,31 +12,32 @@
  */
 
 
+import { ChapterInfoResponse } from './chapter-info-response';
 
 /**
  * 
  * @export
- * @interface InlineResponse200Sections
+ * @interface SectionInfoResponse
  */
-export interface InlineResponse200Sections {
+export interface SectionInfoResponse {
     /**
      * 章节id
      * @type {number}
-     * @memberof InlineResponse200Sections
+     * @memberof SectionInfoResponse
      */
     id: number;
     /**
      * 章节标题
      * @type {string}
-     * @memberof InlineResponse200Sections
+     * @memberof SectionInfoResponse
      */
     title: string;
     /**
-     * 当前章节包含的所有练习id
-     * @type {Array<number>}
-     * @memberof InlineResponse200Sections
+     * 当前章节包含的所有段落id
+     * @type {Array<ChapterInfoResponse>}
+     * @memberof SectionInfoResponse
      */
-    exercises: Array<number>;
+    chapters: Array<ChapterInfoResponse>;
 }
 
 

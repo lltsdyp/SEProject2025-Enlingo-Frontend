@@ -12,31 +12,38 @@
  */
 
 
+import { LessonInfoResponse } from './lesson-info-response';
 
 /**
  * 
  * @export
- * @interface InlineResponse2001
+ * @interface ChapterInfoResponse
  */
-export interface InlineResponse2001 {
+export interface ChapterInfoResponse {
+    /**
+     * 段落的id
+     * @type {number}
+     * @memberof ChapterInfoResponse
+     */
+    id: number;
     /**
      * 段落的标题
      * @type {string}
-     * @memberof InlineResponse2001
+     * @memberof ChapterInfoResponse
      */
     title: string;
     /**
      * 段落的描述
      * @type {string}
-     * @memberof InlineResponse2001
+     * @memberof ChapterInfoResponse
      */
     description: string;
     /**
-     * 段落包含的所有课程的id
-     * @type {Array<number>}
-     * @memberof InlineResponse2001
+     * 段落包含的所有课程信息
+     * @type {Array<LessonInfoResponse>}
+     * @memberof ChapterInfoResponse
      */
-    lessons: Array<number>;
+    lessons: Array<LessonInfoResponse>;
 }
 
 

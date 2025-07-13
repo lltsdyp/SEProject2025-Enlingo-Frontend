@@ -106,7 +106,7 @@ import { Pressable, View } from "react-native";
 
 import { Text } from "@/components/themed";
 import { layouts } from "@/constants/layouts";
-import { courseContent } from "@/content/courses/data";
+import { useCourseContent } from "@/content/courses/data";
 import { useCourse } from "@/context/course";
 import { useTheme } from "@/context/theme";
 import { router } from "expo-router";
@@ -115,6 +115,14 @@ export default function VocabularyPractice() {
   const { courseId } = useCourse();
   const { foreground, mutedForeground, border, accent } = useTheme();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const courseContent = useCourseContent();
+  if (!courseContent) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>加载中...</Text>
+      </View>
+    );
+  }
 
   if (!courseId) return null;
 

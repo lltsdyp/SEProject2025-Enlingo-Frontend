@@ -16,7 +16,9 @@ import {
 import { getExercise } from "@/content/courses/data";
 import { getLocalData, setLocalData } from "@/lib/local-storage";
 import { SupportedLanguageCode } from "@/types";
-import { CourseProgression } from "@/types/course";
+import { CourseProgression, Section } from "@/types/course";
+import { getSections } from "@/api";
+import { useQuery } from "@tanstack/react-query";
 
 type CourseContextType = {
   courseId: SupportedLanguageCode | null;
@@ -26,6 +28,25 @@ type CourseContextType = {
 };
 
 const CourseContext = createContext<CourseContextType | undefined>(undefined);
+
+// 这是一个新的纯工具函数，用于验证ID
+const isValidCourseProgressIds = (
+  sections: Section[], 
+  progress: CourseProgression
+): boolean => {
+  try {
+    const section = sections[progress.sectionId];
+    if (!section) return false;
+    const chapter = section.chapters[progress.chapterId];
+    if (!chapter) return false;
+    const lesson = chapter.lessons[progress.lessonId];
+    if (!lesson) return false;
+    if (progress.exerciseId >= lesson.exercises.length) return false;
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
 
 export const useCourse = () => {
   const context = useContext(CourseContext);
@@ -45,6 +66,13 @@ export function CourseProvider({ children }: Props) {
     DEFAULT_COURSE_PROGRESS
   );
   const [isInitialized, setIsInitialized] = useState(false);
+  const { data: sections, isLoading: isSectionsLoading } = useQuery({
+    queryKey: ['sections', courseId],
+    queryFn: () => getSections(courseId!),
+    // 只有当 courseId 确定后才去尝试获取
+    enabled: !!courseId, 
+    retry: 3
+  });
 
   const handleCourseProgress = async (courseId: SupportedLanguageCode) => {
     const courseProgressKey = COURSE_PROGRESS_STORAGE_KEY(courseId);
@@ -57,7 +85,7 @@ export function CourseProvider({ children }: Props) {
         ) as CourseProgression;
         if (
           isValidCourseProgress(parsedCourseProgress) &&
-          isValidCourseProgressIds(parsedCourseProgress)
+          isValidCourseProgressIds(sections as Section[],parsedCourseProgress)
         ) {
           setCourseProgress(parsedCourseProgress);
         } else {
@@ -94,10 +122,6 @@ export function CourseProvider({ children }: Props) {
       return true;
     }
     return false;
-  };
-
-  const isValidCourseProgressIds = (courseProgress: CourseProgression) => {
-    return !!getExercise(courseProgress);
   };
 
   const handleInvalidCourseProgress = () => {
@@ -142,6 +166,13 @@ export function CourseProvider({ children }: Props) {
       setLocalData(courseProgressKey, JSON.stringify(courseProgress));
     }
   }, [courseProgress, isInitialized]);
+
+  useEffect(() => {
+    if (isInitialized && courseId !== null && !isSectionsLoading) {
+      setLocalData(CURRENT_COURSE_ID_STORAGE_KEY, courseId);
+      handleCourseProgress(courseId);
+    }
+  }, [courseId, isInitialized, isSectionsLoading, sections]); 
 
   const courseContextValue: CourseContextType = {
     courseId,
