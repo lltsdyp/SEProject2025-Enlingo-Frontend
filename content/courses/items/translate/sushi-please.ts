@@ -17,7 +17,7 @@ export const exampleVideoExercise: VideoExercise = {
     ru: "Смотрите видео и отвечайте на вопросы",
   },
   video: {
-    source: {uri: "http://26l1b06988.qicp.vip:38000/seproject-2025/test.mp4"} ,
+    source: {uri: "http://26l1b06988.qicp.vip:38000/seproject-2025/test.mp4" } ,
   },
   srt: "http://26l1b06988.qicp.vip:38000/seproject-2025/test.srt",
 };
