@@ -2,10 +2,10 @@ import { SupportedLanguageCode } from "@/types";
 import { CourseProgression } from "@/types/course";
 
 export const DEFAULT_COURSE_PROGRESS: CourseProgression = {
-  sectionId: 0,
-  chapterId: 0,
-  lessonId: 0,
-  exerciseId: 0,
+  sectionIdx: 0,
+  chapterIdx: 0,
+  lessonIdx: 0,
+  exerciseIdx: 0,
 };
 
 export const DEFAULT_COURSE_ID: SupportedLanguageCode = "en";

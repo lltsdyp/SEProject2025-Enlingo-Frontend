@@ -17,30 +17,85 @@ import { useCourse } from "@/context/course";
 import { useTheme } from "@/context/theme";
 import { useAudio } from "@/hooks/audio";
 import { calculatePrecentage, shuffleArray } from "@/lib/utils";
-import { ExerciseSet } from "@/types/course";
+import { ExerciseSet, ExerciseSetId } from "@/types/course";
+import { useExercise } from "@/content/courses/data";
 
 interface Props {
-  exercise: ExerciseSet;
+  exerciseId: ExerciseSetId;
   increaseProgress: boolean;
 }
 
-export default function ExerciseScreen({ exercise, increaseProgress }: Props) {
-  const shuffledExerciseItems = useMemo(
-    () => shuffleArray(exercise.items),
-    [exercise.items]
-  );
-  const totalExerciseItems = shuffledExerciseItems.length;
+export default function ExerciseScreen({ exerciseId, increaseProgress }: Props) {
+ // ===================================================================
+  // --- 步骤 1: 在组件顶层，无条件地调用所有 Hooks ---
+  // ===================================================================
 
-  const { courseId } = useCourse();
+  // 依赖链上游的 Hooks
+  const { 
+    courseId, 
+    isLoading: isCourseLoading,
+    isError: isCourseError
+  } = useCourse();
+  
+  const {
+    exercise,
+    isLoading: isExerciseLoading,
+    isError: isExerciseError
+  } = useExercise(exerciseId);
+
+  // UI 和状态相关的 Hooks
   const { accent, foreground, mutedForeground } = useTheme();
   const breakpoint = useBreakpoint();
-
   const { playSound: playCorrectSound } = useAudio({ source: sound.correct });
   const { playSound: playWrongSound } = useAudio({ source: sound.wrong });
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [finishedCount, setFinishedCount] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
+
+  // useMemo 也是一个 Hook，也必须在顶层
+  const shuffledExerciseItems = useMemo(() => {
+    // 注意：在这里需要处理 exercise 可能为 undefined 的情况，
+    // 因为守卫逻辑在 useMemo 之后。
+    if (!exercise || !Array.isArray(exercise.items)) {
+      return [];
+    }
+    return shuffleArray([...exercise.items]);
+  }, [exercise]);
+  
+  const totalExerciseItems = shuffledExerciseItems.length;
+
+  // ===================================================================
+  // --- 步骤 2: 在所有 Hooks 调用之后，才开始写条件返回（守卫）---
+  // ===================================================================
+  
+  // 为 useCourse 建立守卫
+  if (isCourseLoading) {
+    return <Text>Loading Course...</Text>;
+  }
+
+  if (isCourseError || !courseId) {
+    return <Text>Failed to load course information.</Text>;
+  }
+  
+  // 为 exerciseId prop 建立守卫
+  if (!exerciseId || typeof exerciseId.id === 'undefined') {
+    return <Text>Error: Invalid Exercise ID provided.</Text>;
+  }
+
+  // 为 useExercise 建立守卫
+  if (isExerciseLoading) {
+    return <Text>Loading Exercise...</Text>;
+  }
+  
+  if (isExerciseError || !exercise) {
+    return <Text>Failed to load exercise data.</Text>;
+  }
+  
+  // 为业务逻辑建立守卫
+  if (isFinished) {
+    return <LessonOutroScreen xp={exercise.xp} /*...*/ duration={""} target={""} increaseProgress={false} /*...*/ />;
+  }
 
   const onResult = (success: boolean) => {
     if (finishedCount < totalExerciseItems) {

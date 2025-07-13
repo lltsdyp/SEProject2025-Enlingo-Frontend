@@ -5,16 +5,16 @@ import { Metadata } from "@/components/metadata";
 import { getExercise } from "@/content/courses/data";
 
 export default function Practice() {
-  const { sectionId, chapterId, lessonId, exerciseId } = useLocalSearchParams();
+  const { sectionIdx, chapterIdx, lessonIdx, exerciseIdx } = useLocalSearchParams();
 
   const toNumber = (value: any) =>
     typeof value === "string" ? Number(value) : -1;
 
   const exercise = getExercise({
-    sectionId: toNumber(sectionId),
-    chapterId: toNumber(chapterId),
-    lessonId: toNumber(lessonId),
-    exerciseId: toNumber(exerciseId),
+    sectionIdx: toNumber(sectionIdx),
+    chapterIdx: toNumber(chapterIdx),
+    lessonIdx: toNumber(lessonIdx),
+    exerciseIdx: toNumber(exerciseIdx),
   });
   if (!exercise) return null;
 
@@ -24,7 +24,7 @@ export default function Practice() {
         title="Pratice"
         description="Pratice a lesson every day to keep your streak."
       />
-      <ExerciseScreen exercise={exercise} increaseProgress={false} />
+      <ExerciseScreen exerciseId={exercise} increaseProgress={false} />
     </>
   );
 }

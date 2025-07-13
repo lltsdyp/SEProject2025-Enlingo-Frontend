@@ -16,7 +16,7 @@ export default function Lesson() {
         title="Lesson"
         description="Learn a new lesson every day to keep your streak."
       />
-      <ExerciseScreen exercise={exercise} increaseProgress={true} />
+      <ExerciseScreen exerciseId={exercise} increaseProgress={true} />
     </>
   );
 }

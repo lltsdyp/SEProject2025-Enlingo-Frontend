@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { Dimensions } from "react-native";
+import { Dimensions } from "react-native"; // 保持顶层导入
 
 import { isWeb } from "@/lib/utils";
 
@@ -26,19 +26,20 @@ function useDevice() {
     { name: "lg", maxWidth: 1024 },
     { name: "xl", maxWidth: 1280 },
     { name: "2xl", maxWidth: 1536 },
-  ];
+  ] as const; // 使用 as const 获得更强的类型推断
 
   const getActiveBreakpoint = () => {
     const screenWidth = isWeb()
       ? window.innerWidth
       : Dimensions.get("window").width;
 
+    // find 返回的可能是 undefined，所以需要一个默认值
     const matchingBreakpoint = breakpoints.find(
       (breakpoint) => screenWidth <= breakpoint.maxWidth
     );
     return matchingBreakpoint
-      ? (matchingBreakpoint.name as Breakpoints)
-      : (breakpoints[breakpoints.length - 1].name as Breakpoints);
+      ? matchingBreakpoint.name
+      : breakpoints[breakpoints.length - 1].name;
   };
 
   const [activeBreakpoint, setActiveBreakpoint] = useState<Breakpoints>(
@@ -47,10 +48,7 @@ function useDevice() {
 
   useEffect(() => {
     const handleResize = () => {
-      const newBreakpoint = getActiveBreakpoint();
-      if (newBreakpoint !== activeBreakpoint) {
-        setActiveBreakpoint(newBreakpoint);
-      }
+      setActiveBreakpoint(getActiveBreakpoint());
     };
 
     if (isWeb()) {
@@ -59,13 +57,17 @@ function useDevice() {
         window.removeEventListener("resize", handleResize);
       };
     } else {
-      const { Dimensions } = require("react-native");
-      Dimensions.addEventListener("change", handleResize);
+      // --- 这是关键的修改 ---
+      // 1. 使用 addEventListener 返回的订阅对象
+      const subscription = Dimensions.addEventListener("change", handleResize);
+      
+      // 2. 在清理函数中调用 .remove() 方法
       return () => {
-        Dimensions.removeEventListener("change", handleResize);
+        subscription.remove();
       };
+      // ----------------------
     }
-  }, [activeBreakpoint]);
+  }, []); // 依赖项数组应该为空，以确保监听器只在挂载时添加一次
 
   return activeBreakpoint;
 }

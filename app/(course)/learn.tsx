@@ -8,7 +8,7 @@ import { Metadata } from "@/components/metadata";
 import { Text, View } from "@/components/themed";
 import { Button } from "@/components/ui/button";
 import { layouts } from "@/constants/layouts";
-import { courseContent } from "@/content/courses/data";
+import { useCourseContent } from "@/content/courses/data";
 import { useBreakpoint } from "@/context/breakpoints";
 import { useCourse } from "@/context/course";
 import { useLanguageCode } from "@/context/language";
@@ -17,39 +17,30 @@ import { Chapter } from "@/types/course";
 
 const CAMP = 16;
 const CIRCLE_RADUIS = 48;
-const VIDEO_COVER_HEIGHT = 120;
-const VIDEO_COVER_WIDTH = 200;
 
-const recommendedVideos = [
-  {
-    id: "1",
-    title: "Unit 1 Intro",
-    thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
-  },
-  {
-    id: "2",
-    title: "Unit 2 Basics",
-    thumbnail: "https://img.youtube.com/vi/oHg5SJYRHA0/hqdefault.jpg",
-  },
-  {
-    id: "3",
-    title: "Unit 3 Advanced",
-    thumbnail: "https://img.youtube.com/vi/ZZ5LpwO-An4/hqdefault.jpg",
-  },
-];
 
 export default function Learn() {
   const { languageCode } = useLanguageCode();
   const { courseId, courseProgress } = useCourse();
   const { mutedForeground, border, accent } = useTheme();
   const breakpoint = useBreakpoint();
+  const courseContent = useCourseContent();
+  console.log("learn page");
+  console.log(courseContent);
+  if (!courseContent) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>加载中...</Text>
+      </View>
+    );
+  }
 
   const [headerHeight, setHeaderHeight] = useState(0);
 
   let isOdd = true;
   let translateX = 0;
 
-  const currentSection = courseContent.sections[courseProgress.sectionId];
+  const currentSection = courseContent.sections[courseProgress.sectionIdx];
   if (!currentSection) return null;
 
   const renderCourseChapter = (chapter: Chapter, chapterIndex: number) => (
@@ -114,32 +105,34 @@ export default function Learn() {
             isOdd ? (translateX += CIRCLE_RADUIS) : (translateX -= CIRCLE_RADUIS);
           }
 
-          const isCurrentChapter = courseProgress.chapterId === chapterIndex;
+          const isCurrentChapter = courseProgress.chapterIdx === chapterIndex;
           const isCurrentLesson =
-            isCurrentChapter && courseProgress.lessonId === lessonIndex;
+            isCurrentChapter && courseProgress.lessonIdx === lessonIndex;
           const isFinishedLesson =
-            (isCurrentChapter && lessonIndex < courseProgress.lessonId) ||
-            chapterIndex < courseProgress.chapterId;
-          const currentExercise = lession.exercises[courseProgress.exerciseId];
+            (isCurrentChapter && lessonIndex < courseProgress.lessonIdx) ||
+            chapterIndex < courseProgress.chapterIdx;
+          const currentExercise = lession.exercises[courseProgress.exerciseIdx];
+          console.log("progress chapter id:", courseProgress.chapterIdx, "progress lesson id:", courseProgress.lessonIdx,"current exercise:",currentExercise);
+          console.log("current chapter id:", chapterIndex, "current lesson id:", lessonIndex);
 
-          if (!currentExercise) return null;
+          // if (!currentExercise) return null;
 
           return (
             <LessonItem
               key={lessonIndex}
               index={lessonIndex}
               circleRadius={CIRCLE_RADUIS}
-              currentExercise={currentExercise}
+              exerciseSetId={currentExercise}
               isCurrentLesson={isCurrentLesson}
               isFinishedLesson={isFinishedLesson}
               lessonDescription={lession.description[languageCode]}
               totalExercise={lession.exercises.length}
               style={{ transform: [{ translateX }] }}
               courseProgression={{
-                sectionId: courseProgress.sectionId,
-                chapterId: chapterIndex,
-                lessonId: lessonIndex,
-                exerciseId: 0,
+                sectionIdx: courseProgress.sectionIdx,
+                chapterIdx: chapterIndex,
+                lessonIdx: lessonIndex,
+                exerciseIdx: 0,
               }}
             />
           );
@@ -187,8 +180,8 @@ export default function Learn() {
                 breakpoint === "sm"
                   ? 0
                   : breakpoint === "md"
-                  ? layouts.padding * 2
-                  : layouts.padding * 3,
+                    ? layouts.padding * 2
+                    : layouts.padding * 3,
             }}
           >
             <Text
@@ -202,48 +195,14 @@ export default function Learn() {
               {currentSection.title[languageCode]}
             </Text>
           </View>
-
-          {/* 横向滑动视频封面区域 */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{
-              paddingHorizontal: layouts.padding,
-              paddingBottom: layouts.padding,
-            }}
-          >
-            {recommendedVideos.map((video) => (
-              <TouchableOpacity
-                key={video.id}
-                style={{
-                  width: VIDEO_COVER_WIDTH,
-                  height: VIDEO_COVER_HEIGHT,
-                  marginRight: layouts.padding,
-                  borderRadius: 8,
-                  overflow: "hidden",
-                  backgroundColor: "#eee",
-                }}
-                onPress={() => {
-                  // 这里可以添加点击事件，比如跳转视频播放页
-                  console.log("点击视频", video.title);
-                }}
-              >
-                <Image
-                  source={{ uri: video.thumbnail }}
-                  style={{ width: "100%", height: "100%" }}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
         </View>
 
         <ScrollView
           contentContainerStyle={{
             paddingTop:
               breakpoint == "sm"
-                ? headerHeight + VIDEO_COVER_HEIGHT + layouts.padding
-                : headerHeight + VIDEO_COVER_HEIGHT + layouts.padding * 3,
+                ? headerHeight + layouts.padding
+                : headerHeight + layouts.padding * 3,
             paddingBottom: layouts.padding * 2,
             gap: layouts.padding * 4,
           }}

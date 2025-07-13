@@ -13,25 +13,15 @@ export const courseConfig: CourseConfig = {
       href: "/learn",
     },
     {
+      icon: "box",
+      label: "Recommend",
+      href: "/recommend",
+    },
+    {
       icon: "languageSquare",
       label: "Characters",
       href: "/characters",
     },
-    // {
-    //   icon: "shieldStar",
-    //   label: "Leaderboards",
-    //   href: "/leaderboards",
-    // },
-    // {
-    //   icon: "box",
-    //   label: "Quests",
-    //   href: "/quests",
-    // },
-    // {
-    //   icon: "shop",
-    //   label: "Shop",
-    //   href: "/shop",
-    // },
     {
       icon: "profile",
       label: "Profile",
@@ -45,20 +35,15 @@ export const courseConfig: CourseConfig = {
       href: "/learn",
     },
     {
+      icon: "box",
+      label: "Recommend",
+      href: "/recommend",
+    },
+    {
       icon: "languageSquare",
       label: "Characters",
       href: "/characters",
     },
-    // {
-    //   icon: "shieldStar",
-    //   label: "Leaderboards",
-    //   href: "/leaderboards",
-    // },
-    // {
-    //   icon: "box",
-    //   label: "Quests",
-    //   href: "/quests",
-    // },
     {
       icon: "profile",
       label: "Profile",

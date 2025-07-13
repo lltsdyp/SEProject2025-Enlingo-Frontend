@@ -1,3 +1,5 @@
+// _layout.tsx (修改后)
+
 import { useEffect } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFonts } from "expo-font";
@@ -9,12 +11,13 @@ import { CourseProvider } from "@/context/course";
 import { LanguageCodeProvider } from "@/context/language";
 import { ProtectedRouteProvider } from "@/context/protected-route";
 import { ThemeProvider } from "@/context/theme";
-// 1. 导入 QueryClient 和 QueryClientProvider
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-// 2. 创建一个 client 实例 (放在组件外部)
-const queryClient = new QueryClient();
+// 导入我们新的 PreloadProvider
+import { PreloadProvider } from "@/context/preload";
 
+// 创建一个 client 实例 (仍然放在组件外部)
+const queryClient = new QueryClient();
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -40,6 +43,8 @@ export default function RootLayout() {
     if (error) throw error;
   }, [error]);
 
+  // 移除了数据预加载的 useEffect
+
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
@@ -50,18 +55,22 @@ export default function RootLayout() {
     return null;
   }
 
+  // 注意 Provider 的嵌套顺序
   return (
     <ThemeProvider>
       <BreakpointsProvider>
         <LanguageCodeProvider>
-          <CourseProvider>
-            <ProtectedRouteProvider>
-              <QueryClientProvider client={queryClient}>
-                <Stack screenOptions={{ headerShown: false }} />
-                <StatusBar />
-              </QueryClientProvider>
-            </ProtectedRouteProvider>
-          </CourseProvider>
+          <QueryClientProvider client={queryClient}>
+            <PreloadProvider>
+              <CourseProvider>
+                <ProtectedRouteProvider>
+                  {/* 将 PreloadProvider 放在这里 */}
+                  <Stack screenOptions={{ headerShown: false }} />
+                  <StatusBar />
+                </ProtectedRouteProvider>
+              </CourseProvider>
+            </PreloadProvider>
+          </QueryClientProvider>
         </LanguageCodeProvider>
       </BreakpointsProvider>
     </ThemeProvider>
