@@ -1,108 +1,5 @@
-// import { useState } from "react";
-// import { Pressable, ScrollView } from "react-native";
-
-// import { Text, View } from "@/components/themed";
-// import { layouts } from "@/constants/layouts";
-// import { courseContent } from "@/content/courses/data";
-// import { useBreakpoint } from "@/context/breakpoints";
-// import { useCourse } from "@/context/course";
-// import { useTheme } from "@/context/theme";
-
-// export default function Characters() {
-//   const { courseId } = useCourse();
-//   const breakpoint = useBreakpoint();
-//   const { mutedForeground, border, foreground } = useTheme();
-//   const [activeIndex, setActiveIndex] = useState(0);
-//   const [containerWidth, setContainerWidth] = useState(0);
-
-//   if (!courseId) return null;
-
-//   const characters = courseContent.characters[courseId];
-
-//   return (
-//     <View style={{ flex: 1 }}>
-//       <View
-//         style={{
-//           flexDirection: "row",
-//         }}
-//       >
-//         {characters.map(({ role }, index) => (
-//           <Pressable
-//             key={index}
-//             style={{
-//               flex: 1,
-//               paddingBottom: layouts.padding,
-//               paddingTop:
-//                 breakpoint === "sm"
-//                   ? layouts.padding
-//                   : breakpoint === "md"
-//                   ? layouts.padding * 2
-//                   : layouts.padding * 3,
-//               borderBottomWidth: layouts.borderWidth,
-//               borderBottomColor: activeIndex === index ? foreground : border,
-//             }}
-//             onPress={() => (activeIndex !== index ? setActiveIndex(index) : {})}
-//           >
-//             <Text
-//               style={{
-//                 fontSize: 16,
-//                 fontWeight: "bold",
-//                 color: activeIndex === index ? foreground : mutedForeground,
-//                 textAlign: "center",
-//                 textTransform: "uppercase",
-//               }}
-//             >
-//               {role}
-//             </Text>
-//           </Pressable>
-//         ))}
-//       </View>
-//       <ScrollView
-//         onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
-//         contentContainerStyle={{
-//           flexDirection: "row",
-//           flexWrap: "wrap",
-//           padding: breakpoint === "sm" ? layouts.padding : layouts.padding * 2,
-//           gap: breakpoint === "sm" ? layouts.padding / 2 : layouts.padding,
-//           justifyContent: "center",
-//         }}
-//         showsVerticalScrollIndicator={false}
-//       >
-//         {characters[activeIndex].dialogueItems.map((item, index) => {
-//           const size =
-//             breakpoint === "sm"
-//               ? (containerWidth -
-//                   ((layouts.padding / 2) * 4 + layouts.padding * 2)) /
-//                 5
-//               : (containerWidth -
-//                   (layouts.padding * 4 + layouts.padding * 2.0079 * 2)) /
-//                 5;
-
-//           return (
-//             <Pressable
-//               key={index}
-//               style={{
-//                 width: size,
-//                 height: size,
-//                 borderWidth: layouts.borderWidth,
-//                 borderColor: border,
-//                 borderRadius: layouts.padding,
-//                 justifyContent: "center",
-//                 alignItems: "center",
-//               }}
-//             >
-//               <Text style={{ fontSize: 24, color: mutedForeground }}>
-//                 {item}
-//               </Text>
-//             </Pressable>
-//           );
-//         })}
-//       </ScrollView>
-//     </View>
-//   );
-// }
 import React, { useState } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, View, Animated, Dimensions } from "react-native";
 
 import { Text } from "@/components/themed";
 import { layouts } from "@/constants/layouts";
@@ -111,84 +8,278 @@ import { useCourse } from "@/context/course";
 import { useTheme } from "@/context/theme";
 import { router } from "expo-router";
 
+const { width } = Dimensions.get('window');
+
 export default function VocabularyPractice() {
   const { courseId } = useCourse();
-  const { foreground, mutedForeground, border, accent } = useTheme();
+  const { foreground, mutedForeground, border, accent, background } = useTheme();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [slideAnim] = useState(new Animated.Value(0));
+  const [scaleAnim] = useState(new Animated.Value(1));
 
   if (!courseId) return null;
 
   // 取当前课程的生词列表（假设只有一个角色的词库，直接用第0个）
   const words = courseContent.characters[courseId][0].dialogueItems;
-
   const currentWord = words[currentIndex];
+  const progress = ((currentIndex + 1) / words.length) * 100;
 
   // 点击认识或不认识，切换下一词或跳回主页
-  const onAnswer = () => {
-    if (currentIndex < words.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    } else {
-      router.push("/learn"); // 跳回主页
-    }
+  const onAnswer = (isKnown: boolean) => {
+    // 这里可以根据isKnown的值做不同的处理，比如记录学习数据
+    // console.log(`Word: ${currentWord}, Known: ${isKnown}`);
+    
+    // 添加按钮点击动画
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // 添加滑动切换动画
+    Animated.timing(slideAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      if (currentIndex < words.length - 1) {
+        setCurrentIndex(currentIndex + 1);
+        slideAnim.setValue(0);
+      } else {
+        router.push("/learn"); // 跳回主页
+      }
+    });
+  };
+
+  const slideTransform = {
+    transform: [
+      {
+        translateX: slideAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, -width],
+        }),
+      },
+    ],
   };
 
   return (
     <View
       style={{
         flex: 1,
-        padding: layouts.padding * 2,
-        justifyContent: "flex-start",
-        alignItems: "center",
-        marginTop: layouts.padding * 10, // 屏幕偏上
+        backgroundColor: background,
       }}
     >
-      {/* 单词显示 */}
-      <Text
-        style={{
-          fontSize: 48,
-          fontWeight: "bold",
-          color: foreground,
-          marginBottom: layouts.padding * 6,
-        }}
-      >
-        {currentWord}
-      </Text>
-
-      {/* 按钮容器 */}
+      {/* 顶部进度条 */}
       <View
         style={{
-          flexDirection: "row",
-          gap: layouts.padding * 2,
-          width: "100%",
-          justifyContent: "center",
+          marginTop: layouts.padding * 6,
+          marginHorizontal: layouts.padding * 2,
+          height: 4,
+          backgroundColor: border,
+          borderRadius: 2,
+          overflow: 'hidden',
         }}
       >
-        <Pressable
-          onPress={onAnswer}
-          style={({ pressed }) => ({
-            backgroundColor: pressed ? accent : border,
-            paddingVertical: layouts.padding * 1.5,
-            paddingHorizontal: layouts.padding * 4,
-            borderRadius: layouts.padding,
-          })}
+        <View
+          style={{
+            height: '100%',
+            width: `${progress}%`,
+            backgroundColor: accent,
+            borderRadius: 2,
+          }}
+        />
+      </View>
+
+      {/* 进度文本 */}
+      <Text
+        style={{
+          textAlign: 'center',
+          color: mutedForeground,
+          fontSize: 14,
+          marginTop: layouts.padding,
+          marginBottom: layouts.padding * 4,
+        }}
+      >
+        {currentIndex + 1} / {words.length}
+      </Text>
+
+      {/* 主要内容区域 */}
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingHorizontal: layouts.padding * 2,
+        }}
+      >
+        {/* 单词卡片 */}
+        <Animated.View
+          style={[
+            {
+              backgroundColor: background,
+              borderRadius: layouts.padding * 2,
+              paddingVertical: layouts.padding * 4,
+              paddingHorizontal: layouts.padding * 3,
+              marginBottom: layouts.padding * 6,
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 0,
+                height: 8,
+              },
+              shadowOpacity: 0.1,
+              shadowRadius: 20,
+              elevation: 10,
+              borderWidth: 1,
+              borderColor: border,
+              minWidth: width * 0.3,
+              maxWidth: width * 0.5,
+              alignItems: 'center',
+            },
+            slideTransform,
+          ]}
         >
-          <Text style={{ color: foreground, fontWeight: "600", fontSize: 18 }}>
-            认识
+          <Text
+            style={{
+              fontSize: width > 768 ? 36 : 28,
+              fontWeight: 'bold',
+              color: foreground,
+              textAlign: 'center',
+              letterSpacing: 0.5,
+            }}
+          >
+            {currentWord}
           </Text>
-        </Pressable>
-        <Pressable
-          onPress={onAnswer}
-          style={({ pressed }) => ({
-            backgroundColor: pressed ? accent : border,
-            paddingVertical: layouts.padding * 1.5,
-            paddingHorizontal: layouts.padding * 4,
-            borderRadius: layouts.padding,
-          })}
+        </Animated.View>
+
+        {/* 按钮容器 */}
+
+    <Animated.View
+    style={[
+      {
+        flexDirection: 'row',
+        gap: layouts.padding * 2,
+        width: '100%',
+        justifyContent: 'center',
+        paddingHorizontal: layouts.padding * 2,
+        alignItems: 'center',
+      },
+      { transform: [{ scale: scaleAnim }] },
+    ]}
+    >
+    {/* 不认识按钮 */}
+    <Pressable
+      onPress={() => onAnswer(false)}
+      style={({ pressed }) => ({
+        backgroundColor: pressed ? '#ef4444' : '#fef2f2',
+        paddingVertical: layouts.padding * 1.5,
+        paddingHorizontal: layouts.padding * 3,
+        borderRadius: layouts.padding,
+        flex: 1,
+        maxWidth: 160,
+        minHeight: 48, // 👈 强制等高
+        shadowColor: '#ef4444',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: pressed ? 0.3 : 0.1,
+        shadowRadius: 8,
+        elevation: pressed ? 8 : 4,
+        borderWidth: 1,
+        borderColor: pressed ? '#ef4444' : '#fecaca',
+        transform: [{ scale: pressed ? 0.98 : 1 }],
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6, // 👈 emoji 和文字之间的距离
+      })}
+    >
+      <Text
+        style={{
+          color: '#dc2626',
+          fontWeight: '700',
+          fontSize: width > 768 ? 16 : 9,
+          textAlign: 'center',
+        }}
+      >
+        
+      </Text>
+      <Text
+        style={{
+          color: '#dc2626',
+          fontWeight: '700',
+          fontSize: width > 768 ? 16 : 8,
+          textAlign: 'center',
+        }}
+      >
+        不认识
+      </Text>
+    </Pressable>
+
+    {/* 认识按钮 */}
+    <Pressable
+      onPress={() => onAnswer(true)}
+      style={({ pressed }) => ({
+        backgroundColor: pressed ? '#22c55e' : '#f0fdf4',
+        paddingVertical: layouts.padding * 1.5,
+        paddingHorizontal: layouts.padding * 3,
+        borderRadius: layouts.padding,
+        flex: 1,
+        maxWidth: 140,
+        minHeight: 48, // 👈 强制等高
+        shadowColor: '#22c55e',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: pressed ? 0.3 : 0.1,
+        shadowRadius: 8,
+        elevation: pressed ? 8 : 4,
+        borderWidth: 1,
+        borderColor: pressed ? '#22c55e' : '#bbf7d0',
+        transform: [{ scale: pressed ? 0.98 : 1 }],
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+      })}
+    >
+      <Text
+        style={{
+          color: '#16a34a',
+          fontWeight: '700',
+          fontSize: width > 768 ? 16 : 9,
+          textAlign: 'center',
+        }}
+      >
+        
+      </Text>
+      <Text
+        style={{
+          color: '#16a34a',
+          fontWeight: '700',
+          fontSize: width > 768 ? 16 : 8,
+          textAlign: 'center',
+        }}
+      >
+        认识
+      </Text>
+    </Pressable>
+    </Animated.View>
+
+        {/* 底部提示文本 */}
+        <Text
+          style={{
+            textAlign: 'center',
+            color: mutedForeground,
+            fontSize: 14,
+            marginTop: layouts.padding * 4,
+            fontStyle: 'italic',
+          }}
         >
-          <Text style={{ color: foreground, fontWeight: "600", fontSize: 18 }}>
-            不认识
-          </Text>
-        </Pressable>
+          诚实地选择你的熟悉程度
+        </Text>
       </View>
     </View>
   );

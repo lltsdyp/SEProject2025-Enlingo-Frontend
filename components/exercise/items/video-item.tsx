@@ -1,8 +1,8 @@
 // components/InteractiveVideoPlayer.tsx
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Platform } from "react-native";
 import { Video, ResizeMode, AVPlaybackStatus } from "expo-av";
-import Parser from 'srt-parser-2';
+import Parser from "srt-parser-2";
 import { ExerciseItemProps, VideoExercise } from "@/types/course";
 import { ExerciseItemEvent } from "./exercise-item-event";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ interface Props extends ExerciseItemProps {
   containerStyle?: object;
   videoStyle?: object;
   subtitleStyle?: object;
+  onContinue: () => void;
+  onResult: (success: boolean) => void;
 }
 
 interface Subtitle {
@@ -23,7 +25,81 @@ interface Subtitle {
   text: string;
 }
 
-// --- 组件实现 ---
+// 新增：单词释义组件
+function WordDefinitionBox({ 
+  word, 
+  isVisible, 
+  onClose 
+}: { 
+  word: string; 
+  isVisible: boolean; 
+  onClose: () => void; 
+}) {
+  if (!isVisible) return null;
+
+  const boxStyle: React.CSSProperties = {
+    position: "absolute",
+    bottom: "100%",
+    left: "50%",
+    transform: "translateX(-50%)",
+    backgroundColor: "rgba(0, 0, 0, 0.9)",
+    color: "white",
+    padding: "16px 20px",
+    borderRadius: 12,
+    marginBottom: 16,
+    minWidth: 200,
+    maxWidth: 300,
+    textAlign: "center",
+    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+    border: "1px solid rgba(255, 255, 255, 0.2)",
+    zIndex: 1001,
+  };
+
+  const closeButtonStyle: React.CSSProperties = {
+    position: "absolute",
+    top: "8px",
+    right: "12px",
+    background: "none",
+    border: "none",
+    color: "white",
+    fontSize: "18px",
+    cursor: "pointer",
+    padding: "0",
+    lineHeight: 1,
+  };
+
+  const definitionStyle: React.CSSProperties = {
+    fontSize: "16px",
+    fontWeight: "600",
+    marginBottom: "8px",
+    color: "#4A9EFF",
+  };
+
+  const wordStyle: React.CSSProperties = {
+    fontSize: "14px",
+    opacity: 0.8,
+  };
+
+  return (
+    <div style={boxStyle}>
+      <button 
+        style={closeButtonStyle}
+        onClick={onClose}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.opacity = "0.7";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.opacity = "1";
+        }}
+      >
+        ×
+      </button>
+      <div style={definitionStyle}>释义：{word}</div>
+      <div style={wordStyle}>点击单词查看释义</div>
+    </div>
+  );
+}
+
 export function VideoItem({
   exercise,
   onTranslateRequest,
@@ -33,15 +109,17 @@ export function VideoItem({
   onContinue,
   onResult,
 }: Props) {
-  const videoRef = useRef<Video>(null);
+  const videoRef = useRef<Video | HTMLVideoElement>(null);
   const [subtitles, setSubtitles] = useState<Subtitle[]>([]);
   const [currentSubtitle, setCurrentSubtitle] = useState<Subtitle | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // 新增：用于控制练习状态，与 TranslateItem 保持一致
   const [isSuccess, setIsSuccess] = useState<boolean | null>(null);
-
-  // ---副作用 Hooks---
+  
+  // 新增：单词释义状态
+  const [selectedWord, setSelectedWord] = useState<string>("");
+  const [showDefinition, setShowDefinition] = useState(false);
 
   // 加载字幕文件
   useEffect(() => {
@@ -68,28 +146,47 @@ export function VideoItem({
     }
   }, [isSuccess]);
 
-
-  // --- 事件处理函数 ---
-
-  // 点击字幕单词时触发
+  // 修改：增强的单词点击处理函数
   const handleWordPress = (word: string) => {
-    const cleanedWord = word.trim().replace(/[.,!?;:"]$/, '');
+    const cleanedWord = word.trim().replace(/[.,!?;:"]$/, "");
     if (!cleanedWord) {
       return;
     }
-    videoRef.current?.pauseAsync();
+    
+    // 暂停视频
+    if (Platform.OS === "web") {
+      (videoRef.current as HTMLVideoElement)?.pause();
+    } else {
+      (videoRef.current as Video)?.pauseAsync();
+    }
+    
+    // 显示单词释义
+    setSelectedWord(cleanedWord);
+    setShowDefinition(true);
+    
+    // 调用原有的翻译请求
     onTranslateRequest(cleanedWord);
   };
 
+  // 新增：关闭释义框函数
+  const handleCloseDefinition = () => {
+    setShowDefinition(false);
+    setSelectedWord("");
+  };
 
 
   // 新增：当用户点击 "继续" 按钮时触发
   const onPressCheck = () => {
     // 重置状态
     setIsSuccess(null);
-    // 将视频重置到开头
-    videoRef.current?.setPositionAsync(0);
-    // 通知父组件继续
+    // 关闭释义框
+    handleCloseDefinition();
+    
+    if (Platform.OS === "web") {
+      (videoRef.current as HTMLVideoElement).currentTime = 0;
+    } else {
+      (videoRef.current as Video)?.setPositionAsync(0);
+    }
     onContinue();
   };
 
@@ -102,7 +199,7 @@ export function VideoItem({
 
     // 更新当前字幕
     const currentTimeMs = status.positionMillis;
-    const activeSubtitle = subtitles.find(sub => {
+    const activeSubtitle = subtitles.find((sub) => {
       const startTimeMs = parseSrtTime(sub.startTime);
       const endTimeMs = parseSrtTime(sub.endTime);
       return currentTimeMs >= startTimeMs && currentTimeMs <= endTimeMs;
@@ -119,15 +216,167 @@ export function VideoItem({
     }
   };
 
-  // --- 渲染逻辑 ---
+  // --- Web端自定义渲染 ---
+  if (Platform.OS === "web") {
+    // 视频容器样式
+    const videoContainerStyle: React.CSSProperties = {
+      position: "relative",
+      width: 800,
+      maxWidth: "100%",
+      height: 0,
+      paddingBottom: "45%",
+      backgroundColor: "black",
+      borderRadius: 12,
+      overflow: "hidden",
+      margin: "0 auto",
+    };
 
+    // 视频样式
+    const videoStyleWeb: React.CSSProperties = {
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      maxWidth: "100%",
+      maxHeight: "100%",
+      objectFit: "contain",
+      outline: "none",
+    };
+
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          justifyContent: "space-between",
+        }}
+      >
+        <div style={videoContainerStyle}>
+          <video
+            ref={videoRef as any}
+            src={(exercise.video.source as any).uri}
+            style={videoStyleWeb}
+            controls
+            onTimeUpdate={(e) => {
+              const currentTimeMs =
+                ((e.currentTarget as HTMLVideoElement).currentTime || 0) * 1000;
+              const activeSubtitle = subtitles.find((sub) => {
+                const startTimeMs = parseSrtTime(sub.startTime);
+                const endTimeMs = parseSrtTime(sub.endTime);
+                return currentTimeMs >= startTimeMs && currentTimeMs <= endTimeMs;
+              });
+              if (activeSubtitle?.id !== currentSubtitle?.id) {
+                setCurrentSubtitle(activeSubtitle || null);
+              }
+            }}
+            onEnded={() => {
+              if (isSuccess === null) setIsSuccess(true);
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              bottom: 60,
+              left: 0,
+              right: 0,
+              textAlign: "center",
+              padding: "0 20px",
+              zIndex: 1000,
+              pointerEvents: "none",
+            }}
+          >
+            {currentSubtitle && (
+              <div
+                style={{
+                  color: "white",
+                  fontSize: 18,
+                  fontWeight: "bold",
+                  backgroundColor: "rgba(0, 0, 0, 0.8)",
+                  display: "inline-block",
+                  padding: "12px 16px",
+                  borderRadius: 8,
+                  pointerEvents: "auto",
+                }}
+              >
+                {currentSubtitle.text.split(" ").map((word, index) => (
+                  <span
+                    key={`${currentSubtitle.id}-${index}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      try {
+                        handleWordPress(word);
+                        console.log("✅ handleWordPress 调用完成");
+                      } catch (error) {
+                        console.error("❌ handleWordPress 出错:", error);
+                      }
+                    }}
+                    style={{ 
+                      cursor: "pointer", 
+                      marginRight: 6,
+                      padding: "4px 2px",
+                      display: "inline-block",
+                      borderRadius: 4,
+                      transition: "background-color 0.2s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                  >
+                    {word}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 新增：单词释义显示区域 */}
+        <div style={{ 
+          position: "relative", 
+          marginTop: 20, 
+          textAlign: "center",
+          minHeight: 60,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
+          <WordDefinitionBox
+            word={selectedWord}
+            isVisible={showDefinition}
+            onClose={handleCloseDefinition}
+          />
+          
+          <button
+            onClick={onPressCheck}
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#007AFF",
+              color: "white",
+              border: "none",
+              borderRadius: 8,
+              cursor: "pointer",
+              fontSize: 16,
+            }}
+          >
+            Check
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // --- React Native端渲染 ---
   return (
-    // 使用与 TranslateItem 相同的布局结构，以确保 UI 一致性
-    <View style={{ flex: 1, justifyContent: 'space-between' }}>
+    <View style={{ flex: 1, justifyContent: "space-between" }}>
       <View style={[styles.container, containerStyle]}>
         <Video
-          ref={videoRef}
-          source={{ uri: exercise.video.source.toString() }}
+          ref={videoRef as any}
+          source={exercise.video.source}
           style={[styles.video, videoStyle]}
           useNativeControls
           resizeMode={ResizeMode.CONTAIN}
@@ -136,12 +385,12 @@ export function VideoItem({
         <View style={styles.subtitleContainer}>
           {currentSubtitle && (
             <Text style={[styles.subtitleText, subtitleStyle]}>
-              {currentSubtitle.text.split(' ').map((word, index) => (
+              {currentSubtitle.text.split(" ").map((word, index) => (
                 <Text
                   key={`${currentSubtitle.id}-${index}`}
                   onPress={() => handleWordPress(word)}
                 >
-                  {word + ' '}
+                  {word + " "}
                 </Text>
               ))}
             </Text>
@@ -149,15 +398,27 @@ export function VideoItem({
           {error && <Text style={styles.errorText}>{error}</Text>}
         </View>
       </View>
-
-      {/* 
-        统一的事件处理组件。
-        因为此练习没有手动“检查”按钮，所以我们不传递 onPressCheck。
-        当 isSuccess 不为 null 时，它会自动显示结果和“继续”按钮。
-      */}
-        <Button disabled={false} onPress={onPressCheck}>
-          Check
-        </Button>
+      
+      {/* 新增：React Native端的单词释义显示 */}
+      {showDefinition && (
+        <View style={styles.definitionContainer}>
+          <View style={styles.definitionBox}>
+            <Text style={styles.definitionTitle}>释义：{selectedWord}</Text>
+            <Text style={styles.definitionHint}>点击单词查看释义</Text>
+            <Button 
+              disabled={false} 
+              onPress={handleCloseDefinition}
+              style={styles.closeButton}
+            >
+              关闭
+            </Button>
+          </View>
+        </View>
+      )}
+      
+      <Button disabled={false} onPress={onPressCheck}>
+        Check
+      </Button>
     </View>
   );
 }
@@ -204,27 +465,27 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     aspectRatio: 16 / 9,
-    backgroundColor: 'black',
-    borderRadius: 12, // 添加圆角以匹配你的设计
-    overflow: 'hidden', // 确保子元素不会超出圆角边界
+    backgroundColor: "black",
+    borderRadius: 12,
+    overflow: "hidden",
   },
   video: {
     ...StyleSheet.absoluteFillObject,
   },
   subtitleContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 10,
     left: 10,
     right: 10,
-    alignItems: 'center',
-    paddingBottom: 45, // 为原生控件留出更多空间
+    alignItems: "center",
+    paddingBottom: 45,
   },
   subtitleText: {
-    color: 'white',
+    color: "white",
     fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    fontWeight: "bold",
+    textAlign: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
@@ -236,11 +497,42 @@ const styles = StyleSheet.create({
     // color: '#a0e0ff', 
   },
   errorText: {
-    color: '#ff4d4d',
+    color: "#ff4d4d",
     fontSize: 16,
-    textAlign: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    textAlign: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
     padding: 8,
     borderRadius: 5,
-  }
+  },
+  // 新增：React Native端的单词释义样式
+  definitionContainer: {
+    padding: 16,
+    alignItems: "center",
+  },
+  definitionBox: {
+    backgroundColor: "rgba(0, 0, 0, 0.9)",
+    padding: 20,
+    borderRadius: 12,
+    alignItems: "center",
+    minWidth: 200,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+  },
+  definitionTitle: {
+    color: "#4A9EFF",
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  definitionHint: {
+    color: "white",
+    fontSize: 14,
+    opacity: 0.8,
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  closeButton: {
+    minWidth: 60,
+  },
 });
