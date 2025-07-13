@@ -40,7 +40,7 @@ export default function Learn() {
   let isOdd = true;
   let translateX = 0;
 
-  const currentSection = courseContent.sections[courseProgress.sectionId];
+  const currentSection = courseContent.sections[courseProgress.sectionIdx];
   if (!currentSection) return null;
 
   const renderCourseChapter = (chapter: Chapter, chapterIndex: number) => (
@@ -105,16 +105,17 @@ export default function Learn() {
             isOdd ? (translateX += CIRCLE_RADUIS) : (translateX -= CIRCLE_RADUIS);
           }
 
-          const isCurrentChapter = courseProgress.chapterId === chapterIndex;
+          const isCurrentChapter = courseProgress.chapterIdx === chapterIndex;
           const isCurrentLesson =
-            isCurrentChapter && courseProgress.lessonId === lessonIndex;
+            isCurrentChapter && courseProgress.lessonIdx === lessonIndex;
           const isFinishedLesson =
-            (isCurrentChapter && lessonIndex < courseProgress.lessonId) ||
-            chapterIndex < courseProgress.chapterId;
-          const currentExercise = lession.exercises[courseProgress.exerciseId];
-          console.log("isCurrentChap:",isCurrentChapter,"\nisCurrentLesson:",isCurrentLesson,"\ncurrentExercise:",currentExercise);
+            (isCurrentChapter && lessonIndex < courseProgress.lessonIdx) ||
+            chapterIndex < courseProgress.chapterIdx;
+          const currentExercise = lession.exercises[courseProgress.exerciseIdx];
+          console.log("progress chapter id:", courseProgress.chapterIdx, "progress lesson id:", courseProgress.lessonIdx,"current exercise:",currentExercise);
+          console.log("current chapter id:", chapterIndex, "current lesson id:", lessonIndex);
 
-          if (!currentExercise) return null;
+          // if (!currentExercise) return null;
 
           return (
             <LessonItem
@@ -128,10 +129,10 @@ export default function Learn() {
               totalExercise={lession.exercises.length}
               style={{ transform: [{ translateX }] }}
               courseProgression={{
-                sectionId: courseProgress.sectionId,
-                chapterId: chapterIndex,
-                lessonId: lessonIndex,
-                exerciseId: 0,
+                sectionIdx: courseProgress.sectionIdx,
+                chapterIdx: chapterIndex,
+                lessonIdx: lessonIndex,
+                exerciseIdx: 0,
               }}
             />
           );

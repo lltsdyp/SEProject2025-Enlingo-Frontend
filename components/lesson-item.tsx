@@ -57,7 +57,7 @@ export function LessonItem({
       onRequestClose={closePopover}
       popoverStyle={{
         borderRadius: layouts.padding,
-        backgroundColor: background, // Popover 背景色
+        backgroundColor: background, 
       }}
       backgroundStyle={{
         backgroundColor: 'black',
@@ -120,5 +120,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  // 移除所有 Popover 内容相关的样式，因为它们现在属于 LessonPopoverContent 组件
 });

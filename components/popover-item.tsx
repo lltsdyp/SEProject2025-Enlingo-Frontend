@@ -83,10 +83,10 @@ export const PopoverItem: React.FC<PopoverItemProps> = ({
   }
 
   const {
-    sectionId: sectionId,
-    chapterId: chapterId,
-    lessonId: lessonId, // 从 courseProgression 获取 lessonId
-    // exerciseId: currentProgressionExerciseId, // 避免与 currentExercise.id 混淆
+    sectionIdx: sectionIdx,
+    chapterIdx: chapterIdx,
+    lessonIdx: lessonIdx, // 从 courseProgression 获取 lessonIdx
+    // exerciseIdx: currentProgressionexerciseIdx, // 避免与 currentExercise.id 混淆
   } = courseProgression;
 
   return (
@@ -129,12 +129,12 @@ export const PopoverItem: React.FC<PopoverItemProps> = ({
       <Button
         onPress={() => {
           closePopover();
-          // 注意：router.push 中的 lessonId 和 exerciseId 需要是真实的 ID，而不是索引
-          // 这里的 lessonId 应该是 courseProgression.lessonId
-          // exerciseId 应该是当前获取到的 currentExercise.id
+          // 注意：router.push 中的 lessonIdx 和 exerciseIdx 需要是真实的 ID，而不是索引
+          // 这里的 lessonIdx 应该是 courseProgression.lessonIdx
+          // exerciseIdx 应该是当前获取到的 currentExercise.id
           if (isFinishedLesson) {
             router.push(
-              `/pratice/${sectionId}/${chapterId}/${lessonId}/${currentExercise.id}` // 使用 currentExercise.id
+              `/pratice/${sectionIdx}/${chapterIdx}/${lessonIdx}/${currentExercise.id}` // 使用 currentExercise.id
             );
           } else {
             router.push("/lesson"); // 如果不完成，导航到通用课程页

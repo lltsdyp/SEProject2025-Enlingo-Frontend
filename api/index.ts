@@ -46,7 +46,7 @@ export const apiClient = new DefaultApi(apiConfig, undefined, axiosInstance);
 // getSections 现在将直接返回完整的嵌套对象（除了 Lesson.exercises）
 export const getSections = async (lang: string): Promise<Section[]> => {
   try {
-    // const response = await apiClient.contentLessonGet(lessonId);
+    // const response = await apiClient.contentLessonGet(lessonIdx);
     const response = { data: require('@/mock/content/sections.json') };
 
 
@@ -109,17 +109,17 @@ export const getChapterById = async (id: number): Promise<Chapter> => {
 
 /**
  * 根据 ID 获取 Lesson 的详细信息
- * @param lessonId
+ * @param lessonIdx
  */
-export const getLessonById = async (lessonId: number): Promise<Lesson> => {
+export const getLessonById = async (lessonIdx: number): Promise<Lesson> => {
   try {
     // 假设 contentChapterGet 是获取 Lesson 的方法，如果不是请替换
-    // const response = await apiClient.contentLessonGet(lessonId);
+    // const response = await apiClient.contentLessonGet(lessonIdx);
     const response = { data: require('@/mock/content/lesson.json') };
 
     // 在这里进行数据转换，适配成你的 Lesson 类型
     const transformedLesson: Lesson = {
-      id: lessonId,
+      id: lessonIdx,
       description: {
         en: response.data.description,
         ja: "セクション 1: ルーキー",
@@ -141,9 +141,12 @@ export const getLessonById = async (lessonId: number): Promise<Lesson> => {
 export const getExerciseSetById = async (exerciseId: number): Promise<ExerciseSet> => {
   // const response = await apiClient.contentExerciseGet(exerciseId);
   const response = { data: require('@/mock/content/exercise.json') };
+  console.info("Exercise Response",response.data);
   const mappedItems = response.data.items.map((item: ExerciseInfoResponse | object) => {
     if ('id' in item && 'type' in item) {
-      if (item.type === 'video' && 'video' in item && 'srt' in item && 'subtitle' in item) {
+      console.info("Detected Exercise Item Type");
+      if (item.type === 'Video') {
+        console.info("Detected Video Exercise Item");
         return {
           id: item.id,
           type: 'video' as const,
@@ -159,7 +162,7 @@ export const getExerciseSetById = async (exerciseId: number): Promise<ExerciseSe
     } else {
       throw new Error('Invalid exercise item');
     }
-  }).filter((item: object | null | undefined): item is Exclude<typeof item, null | undefined> => item !== null && item !== undefined); // 移除无效项
+  })
 
   const transformedExerciseSet: ExerciseSet = {
     id: exerciseId,
@@ -167,5 +170,6 @@ export const getExerciseSetById = async (exerciseId: number): Promise<ExerciseSe
     difficulty: response.data.difficulty,
     items: mappedItems,
   };
+  console.log("Item length in api:",transformedExerciseSet.items.length);
   return transformedExerciseSet;
 }

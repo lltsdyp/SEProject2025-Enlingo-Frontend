@@ -23,6 +23,7 @@ export function useExercise(exerciseId: ExerciseSetId): { exercise: ExerciseSet,
     staleTime: 5 * 60 * 1000, // 5 分钟内数据保持新鲜
     retry: 3,
   });
+  console.log("useExerciseData:",exercise);
   return { exercise: exercise as ExerciseSet, isLoading, isError }
 }
 
@@ -97,23 +98,39 @@ export function useCourseContent(): Course | null {
 // --- 2. getExercise 函数：接收一个完整的 Course 对象 ---
 // 这是一个普通的工具函数， Lesson.exercises 仍然需要类型断言
 export function getExercise(
-  { sectionId, chapterId, lessonId, exerciseId }: CourseProgression
+  { sectionIdx, chapterIdx, lessonIdx, exerciseIdx }: CourseProgression
 ): ExerciseSetId | null {
   const course = useCourseContent();
   if (!course) return null;
-  const section = course.sections[sectionId];
+  const section = course.sections[sectionIdx];
   if (section) {
-    const chapter = section.chapters[chapterId];
+    const chapter = section.chapters[chapterIdx];
     if (chapter) {
-      const lesson = chapter.lessons[lessonId];
-      if (lesson && lesson.exercises.length > exerciseId) { // Lesson.exercises 仍然需要类型断言
-        return { id: lesson.exercises[exerciseId] };
+      const lesson = chapter.lessons[lessonIdx];
+      if (lesson && lesson.exercises.length > exerciseIdx) { // Lesson.exercises 仍然需要类型断言
+        return { id: lesson.exercises[exerciseIdx] };
       }
     }
   }
   return null;
 }
 
+// 判断 a 是否在 b 前面
+export function isProgressionBefore(a: CourseProgression, b: CourseProgression): "yes" | "no" | "same" {
+  if (a.sectionIdx < b.sectionIdx) return "yes";
+  if (a.sectionIdx > b.sectionIdx) return "no";
+
+  if (a.chapterIdx < b.chapterIdx) return "yes";
+  if (a.chapterIdx > b.chapterIdx) return "no";
+
+  if (a.lessonIdx < b.lessonIdx) return "yes";
+  if (a.lessonIdx > b.lessonIdx) return "no";
+
+  if (a.exerciseIdx < b.exerciseIdx) return "yes";
+  if (a.exerciseIdx> b.exerciseIdx) return "no";
+
+  return "same";
+}
 
 // --- 3. nextProgress 函数：接收一个完整的 Course 对象 ---
 // 这是一个普通的工具函数， Lesson.exercises 仍然需要类型断言
@@ -121,13 +138,13 @@ export function nextProgress(
   course: Course, // 接收完整的 Course 对象
   current: CourseProgression
 ): CourseProgression | null {
-  const { sectionId, chapterId, lessonId, exerciseId } = current;
+  const { sectionIdx, chapterIdx, lessonIdx, exerciseIdx } = current;
 
-  const section = course.sections[sectionId];
+  const section = course.sections[sectionIdx];
   if (!section) return null;
-  const chapter = section.chapters[chapterId];
+  const chapter = section.chapters[chapterIdx];
   if (!chapter) return null;
-  const lesson = chapter.lessons[lessonId];
+  const lesson = chapter.lessons[lessonIdx];
   if (!lesson) return null;
 
   const exercisesCount = lesson.exercises.length;
@@ -136,19 +153,19 @@ export function nextProgress(
   const sectionsCount = course.sections.length;
 
 
-  if (exerciseId < exercisesCount - 1) {
-    return { ...current, exerciseId: exerciseId + 1 };
-  } else if (lessonId < lessonsCount - 1) {
-    return { ...current, lessonId: lessonId + 1, exerciseId: 0 };
-  } else if (chapterId < chaptersCount - 1) {
-    return { ...current, chapterId: chapterId + 1, lessonId: 0, exerciseId: 0 };
-  } else if (sectionId < sectionsCount - 1) {
+  if (exerciseIdx < exercisesCount - 1) {
+    return { ...current, exerciseIdx: exerciseIdx + 1 };
+  } else if (lessonIdx < lessonsCount - 1) {
+    return { ...current, lessonIdx: lessonIdx + 1, exerciseIdx: 0 };
+  } else if (chapterIdx < chaptersCount - 1) {
+    return { ...current, chapterIdx: chapterIdx + 1, lessonIdx: 0, exerciseIdx: 0 };
+  } else if (sectionIdx < sectionsCount - 1) {
     return {
       ...current,
-      sectionId: sectionId + 1,
-      chapterId: 0,
-      lessonId: 0,
-      exerciseId: 0,
+      sectionIdx: sectionIdx + 1,
+      chapterIdx: 0,
+      lessonIdx: 0,
+      exerciseIdx: 0,
     };
   }
 

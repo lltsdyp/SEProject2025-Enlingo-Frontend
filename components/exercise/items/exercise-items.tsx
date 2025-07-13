@@ -21,6 +21,7 @@ export default function ExerciseItems({
   onContinue,
   onResult,
 }: Props) {
+  console.info("item structure:",exerciseItem);
   if (exerciseItem.type === "flashCard") {
     return (
       <FlashCardItem
