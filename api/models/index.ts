@@ -1,5 +1,7 @@
 export * from './chapter-info-response';
 export * from './exercise-info-response';
+export * from './inline-response200';
+export * from './inline-response2001';
 export * from './lesson-info-response';
 export * from './recommend-video-fetch-response';
 export * from './recommend-video-response';
