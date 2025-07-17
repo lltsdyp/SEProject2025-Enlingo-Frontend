@@ -18,6 +18,11 @@ export const courseConfig: CourseConfig = {
       href: "/recommend",
     },
     {
+      icon: "shieldStar",
+      label: "Chanllenge",
+      href: "/leaderboards",
+    },
+    {
       icon: "languageSquare",
       label: "Characters",
       href: "/characters",
@@ -38,6 +43,11 @@ export const courseConfig: CourseConfig = {
       icon: "box",
       label: "Recommend",
       href: "/recommend",
+    },
+    {
+      icon: "shieldStar",
+      label: "Chanllenge",
+      href: "/leaderboards",
     },
     {
       icon: "languageSquare",

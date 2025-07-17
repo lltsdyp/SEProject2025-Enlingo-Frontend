@@ -10,13 +10,15 @@ import {
 import { FlashCardItem } from "./flash-card-item";
 import { TranslateItem } from "./translate-item";
 import { VideoItem } from "./video-item";
+import { DefaultApiFactory } from "@/api/apis/default-api"; 
+import { apiClient } from "@/api";
 // import {}
-
+const api = DefaultApiFactory();
 interface Props extends ExerciseItemProps {
   exerciseItem: ExerciseItemType;
 }
 
-export default function ExerciseItems({
+export  default  function ExerciseItems({
   exerciseItem,
   onContinue,
   onResult,
@@ -42,7 +44,8 @@ export default function ExerciseItems({
     return (
       <VideoItem
         exercise={exerciseItem as VideoExercise}
-        onTranslateRequest={(text) => {
+        onTranslateRequest={async (text) => {
+          await apiClient.wordlistAddPost(text.trim());
           // TODO
           console.log(`需要翻译: "${text}"`);
         }}

@@ -27,13 +27,7 @@ export default function Learn() {
   const courseContent = useCourseContent();
   console.log("learn page");
   console.log(courseContent);
-  if (!courseContent) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>加载中...</Text>
-      </View>
-    );
-  }
+
 
   const [headerHeight, setHeaderHeight] = useState(0);
 
