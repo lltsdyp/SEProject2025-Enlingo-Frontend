@@ -12,6 +12,8 @@ import { useBreakpoint } from "@/context/breakpoints";
 import { useCourse } from "@/context/course";
 import { useTheme } from "@/context/theme";
 import { IconName } from "@/types";
+import { nextProgress, useCourseContent } from "@/content/courses/data";
+import { Course } from "@/types/course";
 
 interface Props {
   xp: number;
@@ -47,14 +49,18 @@ export default function LessonOutrolayout(props: Props) {
   const breakpoint = useBreakpoint();
   const layout = useWindowDimensions();
   const { courseProgress, setCourseProgress } = useCourse();
+  const courseContent = useCourseContent();
 
   const onContinue = () => {
+    console.log("On Continue in outro");
     if (props.increaseProgress) {
-      // const nextCourseProgress = nextProgress(courseProgress);
-      // if (nextCourseProgress) {
-      //   setCourseProgress(nextCourseProgress);
-      // }
+      console.log("Increase Progress");
+      const nextCourseProgress = nextProgress(courseContent as Course, courseProgress);
+      if (nextCourseProgress) {
+        setCourseProgress(nextCourseProgress);
+      }
     }
+    console.log("Course Progress Index Info:",courseProgress);
     router.push("/learn");
   };
 
