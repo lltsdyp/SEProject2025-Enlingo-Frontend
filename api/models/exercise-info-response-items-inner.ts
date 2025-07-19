@@ -15,19 +15,15 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { SectionInfoResponse } from './section-info-response';
+import type { RetellingExerciseResponse } from './retelling-exercise-response';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { VideoExerciseResponse } from './video-exercise-response';
 
 /**
- * 
+ * @type ExerciseInfoResponseItemsInner
  * @export
- * @interface SectionListResponse
  */
-export interface SectionListResponse {
-    /**
-     * 章节列表
-     * @type {Array<SectionInfoResponse>}
-     * @memberof SectionListResponse
-     */
-    'sections': Array<SectionInfoResponse>;
-}
+export type ExerciseInfoResponseItemsInner = RetellingExerciseResponse | VideoExerciseResponse;
+
 
