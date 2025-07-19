@@ -17,32 +17,32 @@
 /**
  * 
  * @export
- * @interface VideoExerciseResponse
+ * @interface WordlistRandomwordGet200Response
  */
-export interface VideoExerciseResponse {
+export interface WordlistRandomwordGet200Response {
     /**
-     * 类型标识符，必须为Video
+     * 随机单词1，返回一个单词表内的随机单词
      * @type {string}
-     * @memberof VideoExerciseResponse
+     * @memberof WordlistRandomwordGet200Response
      */
-    'type': string;
+    'word1': string;
     /**
-     * 这个实体的id
-     * @type {number}
-     * @memberof VideoExerciseResponse
-     */
-    'id': number;
-    /**
-     * 相应的视频的URL
+     * 随机单词2
      * @type {string}
-     * @memberof VideoExerciseResponse
+     * @memberof WordlistRandomwordGet200Response
      */
-    'video': string;
+    'word2': string;
     /**
-     * 相应的视频对应的字幕文件（SRT格式）的URL
+     * 随机单词3
      * @type {string}
-     * @memberof VideoExerciseResponse
+     * @memberof WordlistRandomwordGet200Response
      */
-    'srt': string;
+    'word3': string;
+    /**
+     * 随机单词4
+     * @type {string}
+     * @memberof WordlistRandomwordGet200Response
+     */
+    'word4': string;
 }
 

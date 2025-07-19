@@ -14,5 +14,17 @@
 
 
 
-export * from './apis/default-api';
+/**
+ * 
+ * @export
+ * @interface RetellingExerciseResponse
+ */
+export interface RetellingExerciseResponse {
+    /**
+     * 
+     * @type {string}
+     * @memberof RetellingExerciseResponse
+     */
+    'content': string;
+}
 
