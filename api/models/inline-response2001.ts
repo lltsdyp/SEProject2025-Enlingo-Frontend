@@ -20,11 +20,29 @@
  */
 export interface InlineResponse2001 {
     /**
-     * 
+     * 随机单词1，返回一个单词表内的随机单词
      * @type {string}
      * @memberof InlineResponse2001
      */
-    url: string;
+    word1: string;
+    /**
+     * 随机单词2
+     * @type {string}
+     * @memberof InlineResponse2001
+     */
+    word2: string;
+    /**
+     * 随机单词3
+     * @type {string}
+     * @memberof InlineResponse2001
+     */
+    word3: string;
+    /**
+     * 随机单词4
+     * @type {string}
+     * @memberof InlineResponse2001
+     */
+    word4: string;
 }
 
 
