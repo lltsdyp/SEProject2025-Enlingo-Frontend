@@ -19,7 +19,7 @@ import { DefaultApi } from "./api";
 import { Configuration } from "./configuration";
 import { Chapter, ExerciseSet, Lesson, Section, VideoExercise } from "@/types/course";
 import { SectionListResponse } from "./models/section-list-response";
-import { ChapterInfoResponse, ExerciseInfoResponse, LessonInfoResponse, SectionInfoResponse,} from "./models";
+import { ChapterInfoResponse, ExerciseInfoResponse, LessonInfoResponse, SectionInfoResponse, } from "./models";
 import { Translations } from "@/types";
 
 const toTranslations = (text: string): Translations => ({
@@ -36,7 +36,7 @@ const axiosInstance = axios.create({
 // 2. 创建 API 配置对象
 const apiConfig = new Configuration({
   // 这个 basePath 会覆盖生成代码中的默认值
-  basePath: 'https://your-api.vilingo.com',
+  basePath: 'http://26l1b06988.qicp.vip:38080',
 });
 
 // 3. 实例化你的 API 客户端，并传入配置和 axios 实例
@@ -46,8 +46,8 @@ export const apiClient = new DefaultApi(apiConfig, undefined, axiosInstance);
 // getSections 现在将直接返回完整的嵌套对象（除了 Lesson.exercises）
 export const getSections = async (lang: string): Promise<Section[]> => {
   try {
-    // const response = await apiClient.contentLessonGet(lessonIdx);
-    const response = { data: require('@/mock/content/sections.json') };
+    const response = await apiClient.contentSectionsGet(lang);
+    // const response = { data: require('@/mock/content/sections.json') };
 
 
     // 假设 mockSectionsRaw.sections 已经是完全嵌套的 Chapter 和 Lesson 对象
@@ -139,13 +139,13 @@ export const getLessonById = async (lessonIdx: number): Promise<Lesson> => {
  * @param exerciseId
  */
 export const getExerciseSetById = async (exerciseId: number): Promise<ExerciseSet> => {
-  // const response = await apiClient.contentExerciseGet(exerciseId);
-  const response = { data: require('@/mock/content/exercise.json') };
-  console.info("Exercise Response",response.data);
+  const response = await apiClient.contentExerciseGet(exerciseId);
+  // const response = { data: require('@/mock/content/exercise.json') };
+  console.info("Exercise Response", response.data);
   const mappedItems = response.data.items.map((item: ExerciseInfoResponse | object) => {
     if ('id' in item && 'type' in item) {
       console.info("Detected Exercise Item Type");
-      if (item.type === 'Video') {
+      if (item.type === 'video') {
         console.info("Detected Video Exercise Item");
         return {
           id: item.id,
@@ -159,7 +159,14 @@ export const getExerciseSetById = async (exerciseId: number): Promise<ExerciseSe
           srt: item.srt,
         }
       }
-    } else {
+      else if(item.type === 'retelling'){
+        console.info("Detected Retelling Exercise Item");
+      }
+      else{
+        throw new Error('Invalid exercise item type');
+      }
+    }
+    else {
       throw new Error('Invalid exercise item');
     }
   })
@@ -170,6 +177,6 @@ export const getExerciseSetById = async (exerciseId: number): Promise<ExerciseSe
     difficulty: response.data.difficulty,
     items: mappedItems,
   };
-  console.log("Item length in api:",transformedExerciseSet.items.length);
+  console.log("Item length in api:", transformedExerciseSet.items.length);
   return transformedExerciseSet;
 }
