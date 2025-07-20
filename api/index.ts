@@ -37,7 +37,7 @@ const axiosInstance = axios.create({
 // 2. 创建 API 配置对象
 const apiConfig = new Configuration({
   // 这个 basePath 会覆盖生成代码中的默认值
-  basePath: 'http://57.158.75.169:8080',
+  basePath: 'http://vilingo.hbgpfxgcdxhcbphg.eastasia.azurecontainer.io:8080',
 });
 
 // 3. 实例化你的 API 客户端，并传入配置和 axios 实例
@@ -140,8 +140,8 @@ export const getLessonById = async (lessonIdx: number): Promise<Lesson> => {
  * @param exerciseId
  */
 export const getExerciseSetById = async (exerciseId: number): Promise<ExerciseSet> => {
-  const response = await apiClient.contentExerciseGet(exerciseId);
-  // const response = { data: require('@/mock/content/exercise.json') };
+  // const response = await apiClient.contentExerciseGet(exerciseId);
+  const response = { data: require('@/mock/content/exercise.json') };
   console.info("Exercise Response", response.data);
   const mappedItems = response.data.items.map((item: ExerciseInfoResponse | object) => {
     if ('id' in item && 'type' in item) {
@@ -162,12 +162,24 @@ export const getExerciseSetById = async (exerciseId: number): Promise<ExerciseSe
       }
       else if(item.type === 'retelling'){
         console.info("Detected Retelling Exercise Item");
+        return {
+          id:item.id,
+          type: 'retelling' as const,
+          question:{
+            en:"TODO",
+            ja:"TODO",
+            cn:"TODO"
+          },
+          content:item.content
+        }
       }
       else{
-        throw new Error('Invalid exercise item type');
+        console.warn("Invalid exercise item type:", item.type);
+        throw new Error('Invalid exercise item type:');
       }
     }
     else {
+      console.warn("Item:",item);
       throw new Error('Invalid exercise item');
     }
   })

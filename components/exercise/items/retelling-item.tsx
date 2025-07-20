@@ -11,6 +11,7 @@ import {
 import { Audio } from "expo-av";
 import { ExerciseItemProps, RetellingExercise } from "@/types/course"; // 假设您的类型定义路径
 import { Button } from "@/components/ui/button"; // 复用您的按钮组件
+import { ExerciseItemEvent } from "./exercise-item-event";
 
 // --- Props 和类型定义 ---
 
@@ -235,13 +236,32 @@ export function RetellingItem({
     );
   };
 
+  /**
+   * (新) 创建一个处理 "Continue" 按钮点击事件的函数
+   * 这会将所有重置状态的逻辑封装在一个地方。
+   */
+  const handlePressContinue = () => {
+    setIsSuccess(null);
+    setError(null);
+    onContinue();
+  };
+
   return (
-    <View style={styles.wrapper}>
+    // (已修改) 将外部容器的样式从 wrapper 改为与 TranslateItem 一致
+    <View
+      style={{
+        justifyContent: "space-between",
+        flex: 1,
+        position: "relative",
+      }}
+    >
+      {/* 主要内容区域 */}
       <View style={styles.container}>
         <TouchableOpacity
           style={[
             styles.recordButton,
             isRecording && styles.recordButtonActive,
+            // 当有结果或正在上传时，禁用录音按钮
             (isUploading || isSuccess !== null) && styles.disabledButton,
           ]}
           onPress={handleToggleRecording}
@@ -250,53 +270,47 @@ export function RetellingItem({
           {renderButtonContent()}
         </TouchableOpacity>
 
+        {/* 错误信息显示在录音按钮下方 */}
         {error && <Text style={styles.errorText}>{error}</Text>}
       </View>
 
-      {/* 底部操作区域，与VideoItem保持一致 */}
-      <View style={styles.footer}>
-        {isSuccess !== null && (
-          <View style={styles.resultContainer}>
-            <Text style={isSuccess ? styles.successText : styles.errorText}>
-              {isSuccess ? "太棒了！复述成功！" : "再试一次吧！"}
-            </Text>
-          </View>
-        )}
-        <Button
-          disabled={isSuccess === null}
-          onPress={() => {
-            // 重置状态并继续
-            setIsSuccess(null);
-            setError(null);
-            onContinue();
-          }}
-        >
-          {isSuccess === null ? "完成录音以继续" : "继续"}
-        </Button>
-      </View>
+      {/* 
+        (已修改) 这是核心改动：
+        我们用 ExerciseItemEvent 组件替换了之前自定义的页脚。
+        这确保了所有练习题的底部UI和行为都是一致的。
+      */}
+      <ExerciseItemEvent
+        // Retelling 没有 "Check" 按钮，因为提交是自动的。
+        // 所以我们将 check 按钮一直保持禁用状态。
+        checkButtonDisabled={true}
+        // 当失败时，我们可以利用 correctAnswer 属性显示一条提示信息。
+        correctAnswer={
+          isSuccess === false ? "There was an issue. Please try again." : ""
+        }
+        isSuccess={isSuccess}
+        // 将我们新创建的函数传递给 "Check" 按钮的回调
+        // 在此场景下，它不会被触发，但 prop 是必需的
+        onPressCheck={() => {}}
+        // 将我们新创建的函数传递给 "Continue" 按钮的回调
+        onPressContinue={handlePressContinue}
+      />
     </View>
   );
 }
 
 // ------------------- 样式表 -------------------
-
 const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
-    padding: 20,
-  },
+  // wrapper 样式已被移除，因为我们采用了 TranslateItem 的布局
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    padding: 20,
   },
   recordButton: {
     width: 160,
     height: 160,
-    borderRadius: 80, // 使其成为圆形
+    borderRadius: 80,
     backgroundColor: "#007AFF",
     justifyContent: "center",
     alignItems: "center",
@@ -307,13 +321,13 @@ const styles = StyleSheet.create({
     elevation: 8,
     borderWidth: 4,
     borderColor: "rgba(255, 255, 255, 0.5)",
-    transition: "background-color 0.3s", // Web端过渡效果
+    // 移除了不兼容Native的 'transition' 属性
   },
   recordButtonActive: {
-    backgroundColor: "#FF3B30", // 红色表示正在录音
+    backgroundColor: "#FF3B30",
   },
   disabledButton: {
-    backgroundColor: "#8E8E93", // 灰色表示禁用
+    backgroundColor: "#8E8E93",
     opacity: 0.7,
   },
   micIcon: {
@@ -321,13 +335,12 @@ const styles = StyleSheet.create({
     height: 40,
     backgroundColor: "white",
     borderRadius: 20,
-    // 这里可以用一个真正的图标库（如FontAwesome）的图标代替
   },
   stopIcon: {
     width: 30,
     height: 30,
     backgroundColor: "white",
-    borderRadius: 4, // 方形停止图标
+    borderRadius: 4,
   },
   buttonText: {
     color: "white",
@@ -342,23 +355,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     backgroundColor: "rgba(255, 0, 0, 0.1)",
-    padding: 10,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
     borderRadius: 8,
+    maxWidth: "90%",
   },
-  successText: {
-    color: "#34C759", // 成功绿色
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  footer: {
-    width: "100%",
-    alignItems: "center",
-    paddingBottom: 20,
-  },
-  resultContainer: {
-    marginBottom: 16,
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: "rgba(0, 0, 0, 0.05)",
-  },
+  // successText, footer, resultContainer 样式已被移除
+  // 因为它们的功能现在由 ExerciseItemEvent 组件处理
 });
