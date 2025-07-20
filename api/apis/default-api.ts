@@ -46,15 +46,48 @@ import type { WordlistTranslateGet200Response } from '../models';
 export const DefaultApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
+         * 使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。
+         * @summary 查询任务结果
+         * @param {string} jobId 使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1ResultsJobIdGet: async (jobId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'jobId' is not null or undefined
+            assertParamExists('apiV1ResultsJobIdGet', 'jobId', jobId)
+            const localVarPath = `/api/v1/results/{job_id}`
+                .replace(`{${"job_id"}}`, encodeURIComponent(String(jobId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * 上传一个包含英文摘要的文本文件和一个用户的录音文件，以启动一个异步的AI分析流程。服务器会立即返回一个用于查询结果的 job_id。
          * @summary 启动分析任务
-         * @param {string} [summaryTxtFile] 
-         * @param {File} [summaryTxtFile2] 一个 .txt 格式的文本文件，内容为待对比的英文摘要。
+         * @param {File} [summaryTxtFile] 一个 .txt 格式的文本文件，内容为待对比的英文摘要。
          * @param {File} [userAudio] 用户的录音文件，支持 .mp3, .wav, .m4a 等主流音频格式。
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiViAnalyzeGet: async (summaryTxtFile?: string, summaryTxtFile2?: File, userAudio?: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiViAnalyzeGet: async (summaryTxtFile?: File, userAudio?: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/vi/analyze`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -68,13 +101,9 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarQueryParameter = {} as any;
             const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
 
-            if (summaryTxtFile !== undefined) {
-                localVarQueryParameter['summary_txt_file'] = summaryTxtFile;
-            }
 
-
-            if (summaryTxtFile2 !== undefined) { 
-                localVarFormParams.append('summary_txt_file', summaryTxtFile2 as any);
+            if (summaryTxtFile !== undefined) { 
+                localVarFormParams.append('summary_txt_file', summaryTxtFile as any);
             }
     
             if (userAudio !== undefined) { 
@@ -553,16 +582,28 @@ export const DefaultApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = DefaultApiAxiosParamCreator(configuration)
     return {
         /**
+         * 使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。
+         * @summary 查询任务结果
+         * @param {string} jobId 使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1ResultsJobIdGet(jobId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1ResultsJobIdGet(jobId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1ResultsJobIdGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * 上传一个包含英文摘要的文本文件和一个用户的录音文件，以启动一个异步的AI分析流程。服务器会立即返回一个用于查询结果的 job_id。
          * @summary 启动分析任务
-         * @param {string} [summaryTxtFile] 
-         * @param {File} [summaryTxtFile2] 一个 .txt 格式的文本文件，内容为待对比的英文摘要。
+         * @param {File} [summaryTxtFile] 一个 .txt 格式的文本文件，内容为待对比的英文摘要。
          * @param {File} [userAudio] 用户的录音文件，支持 .mp3, .wav, .m4a 等主流音频格式。
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiViAnalyzeGet(summaryTxtFile?: string, summaryTxtFile2?: File, userAudio?: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.apiViAnalyzeGet(summaryTxtFile, summaryTxtFile2, userAudio, options);
+        async apiViAnalyzeGet(summaryTxtFile?: File, userAudio?: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiViAnalyzeGet(summaryTxtFile, userAudio, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiViAnalyzeGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -738,16 +779,25 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
     const localVarFp = DefaultApiFp(configuration)
     return {
         /**
+         * 使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。
+         * @summary 查询任务结果
+         * @param {string} jobId 使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1ResultsJobIdGet(jobId: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1ResultsJobIdGet(jobId, options).then((request) => request(axios, basePath));
+        },
+        /**
          * 上传一个包含英文摘要的文本文件和一个用户的录音文件，以启动一个异步的AI分析流程。服务器会立即返回一个用于查询结果的 job_id。
          * @summary 启动分析任务
-         * @param {string} [summaryTxtFile] 
-         * @param {File} [summaryTxtFile2] 一个 .txt 格式的文本文件，内容为待对比的英文摘要。
+         * @param {File} [summaryTxtFile] 一个 .txt 格式的文本文件，内容为待对比的英文摘要。
          * @param {File} [userAudio] 用户的录音文件，支持 .mp3, .wav, .m4a 等主流音频格式。
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiViAnalyzeGet(summaryTxtFile?: string, summaryTxtFile2?: File, userAudio?: File, options?: RawAxiosRequestConfig): AxiosPromise<object> {
-            return localVarFp.apiViAnalyzeGet(summaryTxtFile, summaryTxtFile2, userAudio, options).then((request) => request(axios, basePath));
+        apiViAnalyzeGet(summaryTxtFile?: File, userAudio?: File, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiViAnalyzeGet(summaryTxtFile, userAudio, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -884,17 +934,28 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
  */
 export class DefaultApi extends BaseAPI {
     /**
+     * 使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。
+     * @summary 查询任务结果
+     * @param {string} jobId 使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public apiV1ResultsJobIdGet(jobId: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1ResultsJobIdGet(jobId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * 上传一个包含英文摘要的文本文件和一个用户的录音文件，以启动一个异步的AI分析流程。服务器会立即返回一个用于查询结果的 job_id。
      * @summary 启动分析任务
-     * @param {string} [summaryTxtFile] 
-     * @param {File} [summaryTxtFile2] 一个 .txt 格式的文本文件，内容为待对比的英文摘要。
+     * @param {File} [summaryTxtFile] 一个 .txt 格式的文本文件，内容为待对比的英文摘要。
      * @param {File} [userAudio] 用户的录音文件，支持 .mp3, .wav, .m4a 等主流音频格式。
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public apiViAnalyzeGet(summaryTxtFile?: string, summaryTxtFile2?: File, userAudio?: File, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).apiViAnalyzeGet(summaryTxtFile, summaryTxtFile2, userAudio, options).then((request) => request(this.axios, this.basePath));
+    public apiViAnalyzeGet(summaryTxtFile?: File, userAudio?: File, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiViAnalyzeGet(summaryTxtFile, userAudio, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

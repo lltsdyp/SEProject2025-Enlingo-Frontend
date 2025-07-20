@@ -10,7 +10,7 @@ export interface ExerciseItemProps {
 export interface Exercise {
   id: number;
   question: Translations;
-  type: "flashCard" | "translate" | "video";
+  type: "flashCard" | "translate" | "video" | "retelling";
 }
 
 export interface ExerciseWord {
@@ -32,6 +32,8 @@ export interface VideoExercise extends Exercise{
   video: VideoSources;
   srt:  string;
 }
+
+export interface RetellingExercise extends Exercise {}
 
 export interface TranslateExerciseWord extends ExerciseWord {}
 

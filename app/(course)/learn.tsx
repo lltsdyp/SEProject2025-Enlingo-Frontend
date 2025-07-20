@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ScrollView, Image, TouchableOpacity } from "react-native";
+import { ScrollView, Image, TouchableOpacity, ActivityIndicator } from "react-native";
 
 import { CourseDetailsBar } from "@/components/course-details-bar";
 import { Icon } from "@/components/icons";
@@ -24,7 +24,25 @@ export default function Learn() {
   const { courseId, courseProgress } = useCourse();
   const { mutedForeground, border, accent } = useTheme();
   const breakpoint = useBreakpoint();
-  const courseContent = useCourseContent();
+  const { course:courseContent, isLoading, isError } = useCourseContent();
+
+  // 1. 处理加载状态
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  // 2. 处理错误状态
+  if (isError || courseContent === null) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Error loading course content.</Text>
+      </View>
+    );
+  }
   console.log("learn page");
   console.log(courseContent);
 

@@ -363,7 +363,7 @@ export function VideoItem({
               fontSize: 16,
             }}
           >
-            Check
+            Continue
           </button>
         </div>
       </div>

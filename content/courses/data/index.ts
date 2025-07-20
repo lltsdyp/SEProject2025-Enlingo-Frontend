@@ -4,7 +4,7 @@ import { Course, CourseProgression, ExerciseSet, Section, Chapter, Lesson, Langu
 import { useQueryClient } from "@tanstack/react-query";
 import { useLanguageCode } from '@/context/language';
 import { characters } from '@/content/courses/data/characters';
-import { getExerciseSetById } from '@/api'; // 引入 getExerciseSetById
+import { getExerciseSetById, getSections } from '@/api'; // 引入 getExerciseSetById
 
 import { useQuery } from '@tanstack/react-query';
 
@@ -28,79 +28,86 @@ export function useExercise(exerciseId: ExerciseSetId): { exercise: ExerciseSet,
 }
 
 // --- 1. useCourseContent Hook：从缓存读取已组合的数据 ---
-export function useCourseContent(): Course | null {
-  const queryClient = useQueryClient();
+// export function useCourseContent(): Course | null {
+//   const queryClient = useQueryClient();
+//   const { languageCode } = useLanguageCode();
+
+//   // 从缓存中获取已经通过 getSections 填充好的 sections (Chapter 和 Lesson 已填充)
+//   const sectionsData = queryClient.getQueryData<Section[]>(['sections', languageCode]);
+//   // 从缓存中获取 characters
+//   const charactersData = characters as LanguageCharacters;
+
+//   // 如果任何核心数据块缺失，则返回 null (表示数据未完全加载)
+//   if (!sectionsData || !characters) {
+//     return null;
+//   }
+//   return {
+//     sections: sectionsData,
+//     characters: charactersData,
+//   };
+// }
+
+export function useCourseContent() {
   const { languageCode } = useLanguageCode();
 
-  // 从缓存中获取已经通过 getSections 填充好的 sections (Chapter 和 Lesson 已填充)
-  const sectionsData = queryClient.getQueryData<Section[]>(['sections', languageCode]);
-  // 从缓存中获取 characters
+  // 使用 useQuery 来订阅 'sections' 数据。
+  // 这是最核心的改动。
+  const {
+    data: sectionsData,
+    isLoading: isSectionsLoading,
+    isError: isSectionsError,
+  } = useQuery({
+    // queryKey: 查询的唯一标识符。它必须是一个数组。
+    // 当 languageCode 改变时，React Query 会自动重新获取数据。
+    queryKey: ['sections', languageCode],
+
+    // queryFn: 获取数据的异步函数。
+    // 它必须返回一个 Promise。
+    queryFn: () => getSections(languageCode),
+
+    // enabled: 一个非常有用的选项。
+    // 只有当 languageCode 存在时，这个查询才会被激活。
+    // 这可以防止在 languageCode 初始为空时发送无效的API请求。
+    enabled: !!languageCode,
+  });
+
+  // 假设 characters 是静态导入的，我们直接使用它。
+  // 如果 characters 也是异步的，你应该为它创建另一个 useQuery。
   const charactersData = characters as LanguageCharacters;
 
-  // 如果任何核心数据块缺失，则返回 null (表示数据未完全加载)
-  if (!sectionsData || !characters) {
-    return null;
-  }
+  // 判断最终的加载状态。
+  // 在这个例子中，只有 sections 是异步的，所以加载状态取决于它。
+  const isLoading = isSectionsLoading;
 
-  // // Final Step: Populating Lesson.exercises (since it's still number[] in type)
-  // // 收集所有 Lesson.exercises 中的 ExerciseSet IDs
-  // const allExerciseSetIds = useMemo(() => { // 使用 useMemo 缓存这个 Set
-  //   const ids = new Set<number>();
-  //   sectionsData.forEach(section => {
-  //     section.chapters.forEach(chapter => {
-  //       chapter.lessons.forEach(lesson => {
-  //         (lesson.exercises as number[]).forEach(id => ids.add(id)); // 遍历 Lesson.exercises (断言为 number[])
-  //       });
-  //     });
-  //   });
-  //   return ids;
-  // }, [sectionsData]); // 依赖 sectionsData
+  // 判断最终的错误状态。
+  const isError = isSectionsError;
 
-  // // 获取所有 ExerciseSet 数据并存储在 Map 中，以便填充 Lesson.exercises
-  // // 这些 ExerciseSet 必须在 RootLayoutContent 中被预加载到缓存中
-  // const exerciseSetsMap = useMemo(() => { // 使用 useMemo 缓存这个 Map
-  //   const map = new Map<number, ExerciseSet>();
-  //   allExerciseSetIds.forEach(id => {
-  //     const es = queryClient.getQueryData<ExerciseSet>(['exerciseSet', id]);
-  //     if (es) map.set(id, es);
-  //   });
-  //   return map;
-  // }, [allExerciseSetIds, queryClient]); // 依赖 allExerciseSetIds 和 queryClient
+  // 组合最终的数据。
+  // 只有在加载完成、没有错误、并且两部分数据都存在的情况下，
+  // 我们才认为 Course 数据是完整的。
+  const course: Course | null =
+    !isLoading && !isError && sectionsData && charactersData
+      ? {
+          sections: sectionsData,
+          characters: charactersData,
+        }
+      : null;
 
-
-  // // 最终组合和填充 Lesson.exercises
-  // const finalSections: Section[] = useMemo(() => { // 使用 useMemo 缓存最终的 sections 数组
-  //   return sectionsData.map(section => {
-  //     const finalChapters: Chapter[] = section.chapters.map(chapter => {
-  //       const finalLessons: Lesson[] = chapter.lessons.map(lesson => {
-  //         // 在这里进行 Lesson.exercises 的填充：从 number[] 变为 ExerciseSet[]
-  //         const populatedExercises: ExerciseSet[] = (lesson.exercises as number[]).map(exerciseId => { // 类型断言为 number[]
-  //           return exerciseSetsMap.get(exerciseId) || { id: exerciseId, xp: 0, difficulty: 'easy', items: [] }; // 默认值
-  //         });
-  //         // !!! 关键：Lesson.exercises 原始类型是 number[]，这里将 ExerciseSet[] 赋值给它
-  //         // 所以必须使用 `as unknown as number[]` 强制类型转换
-  //         return { ...lesson, exercises: populatedExercises as unknown as number[] };
-  //       });
-  //       return { ...chapter, lessons: finalLessons };
-  //     });
-  //     return { ...section, chapters: finalChapters };
-  //   });
-  // }, [sectionsData, exerciseSetsMap]); // 依赖 sectionsData 和 exerciseSetsMap
-
-
+  // 返回一个包含状态和最终数据的对象。
+  // 这样，消费这个 Hook 的组件就可以知道当前处于什么状态。
   return {
-    sections: sectionsData,
-    characters: charactersData,
+    course,
+    isLoading,
+    isError,
   };
 }
-
 
 // --- 2. getExercise 函数：接收一个完整的 Course 对象 ---
 // 这是一个普通的工具函数， Lesson.exercises 仍然需要类型断言
 export function getExercise(
   { sectionIdx, chapterIdx, lessonIdx, exerciseIdx }: CourseProgression
 ): ExerciseSetId | null {
-  const course = useCourseContent();
+  const {course,isLoading,isError} = useCourseContent();
   if (!course) return null;
   const section = course.sections[sectionIdx];
   if (section) {
