@@ -25,6 +25,12 @@ export interface RetellingExerciseResponse {
      * @type {string}
      * @memberof RetellingExerciseResponse
      */
+    'type': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RetellingExerciseResponse
+     */
     'content': string;
 }
 

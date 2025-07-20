@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**type** | **string** | 类型标识符，必须为Video | [default to undefined]
+**type** | **string** |  | [default to undefined]
 **id** | **number** | 这个实体的id | [default to undefined]
 **video** | **string** | 相应的视频的URL | [default to undefined]
 **srt** | **string** | 相应的视频对应的字幕文件（SRT格式）的URL | [default to undefined]
