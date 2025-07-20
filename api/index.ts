@@ -37,7 +37,7 @@ const axiosInstance = axios.create({
 // 2. 创建 API 配置对象
 const apiConfig = new Configuration({
   // 这个 basePath 会覆盖生成代码中的默认值
-  basePath: 'http://26l1b06988.qicp.vip:38080',
+  basePath: 'http://57.158.75.169:8080',
 });
 
 // 3. 实例化你的 API 客户端，并传入配置和 axios 实例
