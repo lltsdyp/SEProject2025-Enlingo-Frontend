@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { useWindowDimensions } from "react-native";
+import { ActivityIndicator, useWindowDimensions } from "react-native";
 
 import { Container } from "@/components/container";
 import { Icon } from "@/components/icons";
@@ -49,7 +49,26 @@ export default function LessonOutrolayout(props: Props) {
   const breakpoint = useBreakpoint();
   const layout = useWindowDimensions();
   const { courseProgress, setCourseProgress } = useCourse();
-  const courseContent = useCourseContent();
+  // 使用我们重构后的 Hook，它现在返回一个对象
+  const { course:courseContent, isLoading, isError } = useCourseContent();
+
+  // 1. 处理加载状态
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  // 2. 处理错误状态
+  if (isError) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Error loading course content.</Text>
+      </View>
+    );
+  }
 
   const onContinue = () => {
     console.log("On Continue in outro");
