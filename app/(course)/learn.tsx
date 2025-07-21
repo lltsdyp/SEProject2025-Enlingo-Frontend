@@ -22,6 +22,7 @@ const CIRCLE_RADUIS = 48;
 export default function Learn() {
   const { languageCode } = useLanguageCode();
   const { courseId, courseProgress } = useCourse();
+  console.log("当前 courseId:", courseId);
   const { mutedForeground, border, accent } = useTheme();
   const breakpoint = useBreakpoint();
   const { course:courseContent, isLoading, isError } = useCourseContent();

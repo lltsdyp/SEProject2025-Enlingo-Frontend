@@ -63,7 +63,7 @@ interface Props {
 
 // 4. 重构后的 CourseProvider 组件
 export function CourseProvider({ children }: Props) {
-  const [courseId, setCourseIdInternal] = useState<SupportedLanguageCode | null>(null);
+  const [courseId, setCourseIdInternal] = useState<SupportedLanguageCode | null>("en");
   const [courseProgress, setCourseProgress] = useState<CourseProgression>(
     DEFAULT_COURSE_PROGRESS
   );

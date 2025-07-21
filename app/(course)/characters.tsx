@@ -1,299 +1,4 @@
-// import React, { useState } from "react";
-// import { Pressable, View, Animated, Dimensions } from "react-native";
-
-// import { Text } from "@/components/themed";
-// import { layouts } from "@/constants/layouts";
-// import { useCourseContent } from "@/content/courses/data";
-// import { useCourse } from "@/context/course";
-// import { useTheme } from "@/context/theme";
-// import { router } from "expo-router";
-
-// const { width } = Dimensions.get('window');
-
-// export default function VocabularyPractice() {
-//   const { courseId } = useCourse();
-//   const { foreground, mutedForeground, border, accent, background } = useTheme();
-//   const [currentIndex, setCurrentIndex] = useState(0);
-//   const [slideAnim] = useState(new Animated.Value(0));
-//   const [scaleAnim] = useState(new Animated.Value(1));
-//   const courseContent = useCourseContent();
-//   if (!courseContent) {
-//     return (
-//       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-//         <Text>加载中...</Text>
-//       </View>
-//     );
-//   }
-
-//   if (!courseId) return null;
-
-//   // 取当前课程的生词列表（假设只有一个角色的词库，直接用第0个）
-//   const words = courseContent.characters[courseId][0].dialogueItems;
-//   const currentWord = words[currentIndex];
-//   const progress = ((currentIndex + 1) / words.length) * 100;
-
-//   // 点击认识或不认识，切换下一词或跳回主页
-//   const onAnswer = (isKnown: boolean) => {
-//     // 这里可以根据isKnown的值做不同的处理，比如记录学习数据
-//     // console.log(`Word: ${currentWord}, Known: ${isKnown}`);
-    
-//     // 添加按钮点击动画
-//     Animated.sequence([
-//       Animated.timing(scaleAnim, {
-//         toValue: 0.95,
-//         duration: 100,
-//         useNativeDriver: true,
-//       }),
-//       Animated.timing(scaleAnim, {
-//         toValue: 1,
-//         duration: 100,
-//         useNativeDriver: true,
-//       }),
-//     ]).start();
-
-//     // 添加滑动切换动画
-//     Animated.timing(slideAnim, {
-//       toValue: 1,
-//       duration: 300,
-//       useNativeDriver: true,
-//     }).start(() => {
-//       if (currentIndex < words.length - 1) {
-//         setCurrentIndex(currentIndex + 1);
-//         slideAnim.setValue(0);
-//       } else {
-//         router.push("/learn"); // 跳回主页
-//       }
-//     });
-//   };
-
-//   const slideTransform = {
-//     transform: [
-//       {
-//         translateX: slideAnim.interpolate({
-//           inputRange: [0, 1],
-//           outputRange: [0, -width],
-//         }),
-//       },
-//     ],
-//   };
-
-//   return (
-//     <View
-//       style={{
-//         flex: 1,
-//         backgroundColor: background,
-//       }}
-//     >
-//       {/* 顶部进度条 */}
-//       <View
-//         style={{
-//           marginTop: layouts.padding * 6,
-//           marginHorizontal: layouts.padding * 2,
-//           height: 4,
-//           backgroundColor: border,
-//           borderRadius: 2,
-//           overflow: 'hidden',
-//         }}
-//       >
-//         <View
-//           style={{
-//             height: '100%',
-//             width: `${progress}%`,
-//             backgroundColor: accent,
-//             borderRadius: 2,
-//           }}
-//         />
-//       </View>
-
-//       {/* 进度文本 */}
-//       <Text
-//         style={{
-//           textAlign: 'center',
-//           color: mutedForeground,
-//           fontSize: 14,
-//           marginTop: layouts.padding,
-//           marginBottom: layouts.padding * 4,
-//         }}
-//       >
-//         {currentIndex + 1} / {words.length}
-//       </Text>
-
-//       {/* 主要内容区域 */}
-//       <View
-//         style={{
-//           flex: 1,
-//           justifyContent: 'center',
-//           alignItems: 'center',
-//           paddingHorizontal: layouts.padding * 2,
-//         }}
-//       >
-//         {/* 单词卡片 */}
-//         <Animated.View
-//           style={[
-//             {
-//               backgroundColor: background,
-//               borderRadius: layouts.padding * 2,
-//               paddingVertical: layouts.padding * 4,
-//               paddingHorizontal: layouts.padding * 3,
-//               marginBottom: layouts.padding * 6,
-//               shadowColor: '#000',
-//               shadowOffset: {
-//                 width: 0,
-//                 height: 8,
-//               },
-//               shadowOpacity: 0.1,
-//               shadowRadius: 20,
-//               elevation: 10,
-//               borderWidth: 1,
-//               borderColor: border,
-//               minWidth: width * 0.3,
-//               maxWidth: width * 0.5,
-//               alignItems: 'center',
-//             },
-//             slideTransform,
-//           ]}
-//         >
-//           <Text
-//             style={{
-//               fontSize: width > 768 ? 36 : 28,
-//               fontWeight: 'bold',
-//               color: foreground,
-//               textAlign: 'center',
-//               letterSpacing: 0.5,
-//             }}
-//           >
-//             {currentWord}
-//           </Text>
-//         </Animated.View>
-
-//         {/* 按钮容器 */}
-
-//     <Animated.View
-//     style={[
-//       {
-//         flexDirection: 'row',
-//         gap: layouts.padding * 2,
-//         width: '100%',
-//         justifyContent: 'center',
-//         paddingHorizontal: layouts.padding * 2,
-//         alignItems: 'center',
-//       },
-//       { transform: [{ scale: scaleAnim }] },
-//     ]}
-//     >
-//     {/* 不认识按钮 */}
-//     <Pressable
-//       onPress={() => onAnswer(false)}
-//       style={({ pressed }) => ({
-//         backgroundColor: pressed ? '#ef4444' : '#fef2f2',
-//         paddingVertical: layouts.padding * 1.5,
-//         paddingHorizontal: layouts.padding * 3,
-//         borderRadius: layouts.padding,
-//         flex: 1,
-//         maxWidth: 160,
-//         minHeight: 48, // 👈 强制等高
-//         shadowColor: '#ef4444',
-//         shadowOffset: { width: 0, height: 4 },
-//         shadowOpacity: pressed ? 0.3 : 0.1,
-//         shadowRadius: 8,
-//         elevation: pressed ? 8 : 4,
-//         borderWidth: 1,
-//         borderColor: pressed ? '#ef4444' : '#fecaca',
-//         transform: [{ scale: pressed ? 0.98 : 1 }],
-//         flexDirection: 'row',
-//         alignItems: 'center',
-//         justifyContent: 'center',
-//         gap: 6, // 👈 emoji 和文字之间的距离
-//       })}
-//     >
-//       <Text
-//         style={{
-//           color: '#dc2626',
-//           fontWeight: '700',
-//           fontSize: width > 768 ? 16 : 9,
-//           textAlign: 'center',
-//         }}
-//       >
-        
-//       </Text>
-//       <Text
-//         style={{
-//           color: '#dc2626',
-//           fontWeight: '700',
-//           fontSize: width > 768 ? 16 : 8,
-//           textAlign: 'center',
-//         }}
-//       >
-//         不认识
-//       </Text>
-//     </Pressable>
-
-//     {/* 认识按钮 */}
-//     <Pressable
-//       onPress={() => onAnswer(true)}
-//       style={({ pressed }) => ({
-//         backgroundColor: pressed ? '#22c55e' : '#f0fdf4',
-//         paddingVertical: layouts.padding * 1.5,
-//         paddingHorizontal: layouts.padding * 3,
-//         borderRadius: layouts.padding,
-//         flex: 1,
-//         maxWidth: 140,
-//         minHeight: 48, // 👈 强制等高
-//         shadowColor: '#22c55e',
-//         shadowOffset: { width: 0, height: 4 },
-//         shadowOpacity: pressed ? 0.3 : 0.1,
-//         shadowRadius: 8,
-//         elevation: pressed ? 8 : 4,
-//         borderWidth: 1,
-//         borderColor: pressed ? '#22c55e' : '#bbf7d0',
-//         transform: [{ scale: pressed ? 0.98 : 1 }],
-//         flexDirection: 'row',
-//         alignItems: 'center',
-//         justifyContent: 'center',
-//         gap: 6,
-//       })}
-//     >
-//       <Text
-//         style={{
-//           color: '#16a34a',
-//           fontWeight: '700',
-//           fontSize: width > 768 ? 16 : 9,
-//           textAlign: 'center',
-//         }}
-//       >
-        
-//       </Text>
-//       <Text
-//         style={{
-//           color: '#16a34a',
-//           fontWeight: '700',
-//           fontSize: width > 768 ? 16 : 1,
-//           textAlign: 'center',
-//         }}
-//       >
-//         认识
-//       </Text>
-//     </Pressable>
-//     </Animated.View>
-
-//         {/* 底部提示文本 */}
-//         <Text
-//           style={{
-//             textAlign: 'center',
-//             color: mutedForeground,
-//             fontSize: 14,
-//             marginTop: layouts.padding * 4,
-//             fontStyle: 'italic',
-//           }}
-//         >
-//           诚实地选择你的熟悉程度
-//         </Text>
-//       </View>
-//     </View>
-//   );
-// }
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Pressable, View, Animated, Dimensions } from "react-native";
 
 import { Text } from "@/components/themed";
@@ -304,8 +9,7 @@ import { router } from "expo-router";
 
 const { width } = Dimensions.get('window');
 
-
-import { DefaultApiFactory } from "@/api/apis/default-api"; 
+import { contentApiClient } from "@/api";
 
 export default function VocabularyPractice() {
   const { courseId } = useCourse();
@@ -314,72 +18,213 @@ export default function VocabularyPractice() {
   const [slideAnim] = useState(new Animated.Value(0));
   const [scaleAnim] = useState(new Animated.Value(1));
   
-  // 新增状态管理
+  // 状态管理
   const [words, setWords] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasNextPage, setHasNextPage] = useState(true);
   const [nextWord, setNextWord] = useState<string | undefined>(undefined);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-
-  // 创建API实例
-  const api = DefaultApiFactory();
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   // 获取生词列表的函数
-  const fetchWords = async (before?: string, append: boolean = false) => {
+  const fetchWords = useCallback(async (before?: string, append: boolean = false) => {
     try {
-      if (!append) setLoading(true);
+      console.log('🔄 开始获取生词列表...', { before, append, retryCount });
+      
+      if (!append) {
+        setLoading(true);
+        setError(null); // 清除之前的错误
+      }
       setIsLoadingMore(true);
       
-      const response = await api.wordlistGetGet(20, before);
+      // 修复：确保before参数正确传递，如果是undefined则不传递该参数
+      const response = await contentApiClient.wordlistGetGet(2, before || undefined);
+
+      
+      console.log('✅ API 响应成功:', {
+        status: response.status,
+        data: response.data,
+        listLength: response.data?.list?.length,
+      });
       
       if (append) {
-        setWords(prevWords => [...prevWords, ...response.data.list]);
+        setWords(prevWords => {
+          const newWords = [...prevWords, ...response.data.list];
+          console.log('📝 追加后总单词数:', newWords.length);
+          return newWords;
+        });
       } else {
-        setWords(response.data.list);
+        setWords(response.data.list || []);
       }
       
       setHasNextPage(response.data.hasNextPage);
-      setNextWord(response.data.nextWord);
+      setNextWord(response.data.nextWord ?? undefined);
+      setRetryCount(0); // 成功后重置重试计数
       
-    } catch (error) {
-      console.error('获取生词列表失败:', error);
-      // 可以在这里添加错误处理，比如显示错误提示
+    } catch (error: unknown) {
+      console.error('❌ 获取生词列表失败:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : '网络错误';
+      setError(errorMessage);
+      
+      // 如果是初始加载失败，增加重试计数
+      if (!append) {
+        setRetryCount(prev => prev + 1);
+      }
+      
+      if (error instanceof Error) {
+        console.error('❌ 错误详情:', {
+          message: error.message,
+          name: error.name,
+        });
+      }
+      
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as any;
+        console.error('❌ HTTP 错误详情:', {
+          status: axiosError.response?.status,
+          statusText: axiosError.response?.statusText,
+          data: axiosError.response?.data,
+        });
+      }
     } finally {
       setLoading(false);
       setIsLoadingMore(false);
     }
-  };
+  }, [retryCount]);
+
+  // 手动重试函数
+  const handleRetry = useCallback(() => {
+    console.log('🔄 手动重试加载');
+    fetchWords();
+  }, [fetchWords]);
 
   // 初始加载
   useEffect(() => {
+    console.log('🚀 组件初始化，准备获取生词列表');
     fetchWords();
-  }, []);
+  }, [fetchWords]);
+
+  // 自动重试机制 - 仅在有错误且重试次数少于3次时触发
+  useEffect(() => {
+    if (error && retryCount < 3 && retryCount > 0) {
+      console.log(`⏰ 将在5秒后自动重试 (第${retryCount}次)`);
+      const timer = setTimeout(() => {
+        fetchWords();
+      }, 5000); // 5秒后重试
+
+      return () => clearTimeout(timer);
+    }
+  }, [error, retryCount, fetchWords]);
 
   // 检查是否需要加载更多单词
   useEffect(() => {
-    // 当剩余单词少于5个且还有更多数据时，自动加载
     if (words.length > 0 && 
         currentIndex >= words.length - 5 && 
         hasNextPage && 
-        !isLoadingMore) {
+        !isLoadingMore &&
+        nextWord) { // 确保nextWord存在
       fetchWords(nextWord, true);
     }
-  }, [currentIndex, words.length, hasNextPage, nextWord, isLoadingMore]);
+  }, [currentIndex, words.length, hasNextPage, nextWord, isLoadingMore, fetchWords]);
 
   // 加载中状态
-  if (loading) {
+  if (loading && words.length === 0) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>加载中...</Text>
+        <Text style={{ color: foreground }}>加载中...</Text>
+        {retryCount > 0 && (
+          <Text style={{ marginTop: 8, fontSize: 12, color: mutedForeground }}>
+            重试中... ({retryCount}/3)
+          </Text>
+        )}
       </View>
     );
   }
 
-  // 没有单词数据
+  // 错误状态
+  if (error && words.length === 0) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 20 }}>
+        <Text style={{ color: foreground, textAlign: 'center', marginBottom: 16 }}>
+          加载失败
+        </Text>
+        <Text style={{ color: mutedForeground, fontSize: 14, textAlign: 'center', marginBottom: 20 }}>
+          {error}
+        </Text>
+        
+        {retryCount < 3 ? (
+          <>
+            <Pressable
+              onPress={handleRetry}
+              style={({ pressed }) => ({
+                backgroundColor: pressed ? accent : background,
+                paddingVertical: 12,
+                paddingHorizontal: 24,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: border,
+                marginBottom: 12,
+              })}
+            >
+              <Text style={{ color: foreground, fontWeight: '600' }}>
+                手动重试
+              </Text>
+            </Pressable>
+            
+            <Text style={{ fontSize: 12, color: mutedForeground, textAlign: 'center' }}>
+              {retryCount > 0 ? `自动重试中... (${retryCount}/3)` : '或等待自动重试'}
+            </Text>
+          </>
+        ) : (
+          <>
+            <Pressable
+              onPress={handleRetry}
+              style={({ pressed }) => ({
+                backgroundColor: pressed ? accent : background,
+                paddingVertical: 12,
+                paddingHorizontal: 24,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: border,
+                marginBottom: 12,
+              })}
+            >
+              <Text style={{ color: foreground, fontWeight: '600' }}>
+                重新尝试
+              </Text>
+            </Pressable>
+            
+            <Text style={{ fontSize: 12, color: mutedForeground, textAlign: 'center' }}>
+              已达到最大重试次数
+            </Text>
+          </>
+        )}
+      </View>
+    );
+  }
+
+  // 没有单词数据但没有错误
   if (words.length === 0) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>暂无生词数据</Text>
+        <Text style={{ color: foreground, marginBottom: 16 }}>暂无生词数据</Text>
+        <Pressable
+          onPress={handleRetry}
+          style={({ pressed }) => ({
+            backgroundColor: pressed ? accent : background,
+            paddingVertical: 12,
+            paddingHorizontal: 24,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: border,
+          })}
+        >
+          <Text style={{ color: foreground, fontWeight: '600' }}>
+            刷新
+          </Text>
+        </Pressable>
       </View>
     );
   }
@@ -389,9 +234,6 @@ export default function VocabularyPractice() {
 
   // 点击认识或不认识，切换下一词或跳回主页
   const onAnswer = (isKnown: boolean) => {
-    // 这里可以根据isKnown的值做不同的处理，比如记录学习数据
-    // console.log(`Word: ${currentWord}, Known: ${isKnown}`);
-    
     // 添加按钮点击动画
     Animated.sequence([
       Animated.timing(scaleAnim, {
@@ -416,14 +258,13 @@ export default function VocabularyPractice() {
         setCurrentIndex(currentIndex + 1);
         slideAnim.setValue(0);
       } else {
-        // 如果还有更多单词，尝试加载更多
-        if (hasNextPage && !isLoadingMore) {
+        if (hasNextPage && !isLoadingMore && nextWord) {
           fetchWords(nextWord, true).then(() => {
             setCurrentIndex(currentIndex + 1);
             slideAnim.setValue(0);
           });
         } else {
-          router.push("/learn"); // 跳回主页
+          router.push("/learn");
         }
       }
     });
@@ -572,16 +413,6 @@ export default function VocabularyPractice() {
             style={{
               color: '#dc2626',
               fontWeight: '700',
-              fontSize: width > 768 ? 16 : 9,
-              textAlign: 'center',
-            }}
-          >
-            
-          </Text>
-          <Text
-            style={{
-              color: '#dc2626',
-              fontWeight: '700',
               fontSize: width > 768 ? 16 : 12,
               textAlign: 'center',
             }}
@@ -615,16 +446,6 @@ export default function VocabularyPractice() {
             gap: 6,
           })}
         >
-          <Text
-            style={{
-              color: '#16a34a',
-              fontWeight: '700',
-              fontSize: width > 768 ? 16 : 9,
-              textAlign: 'center',
-            }}
-          >
-            
-          </Text>
           <Text
             style={{
               color: '#16a34a',
