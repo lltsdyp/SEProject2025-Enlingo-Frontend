@@ -1,82 +1,16 @@
-import React from 'react';
-import { StyleSheet, View, Text, Pressable } from 'react-native';
-import { MasonryFlashList, ListRenderItemInfo } from "@shopify/flash-list"; 
+import React, { useState, useEffect, useCallback } from 'react';
+import { StyleSheet, View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { MasonryFlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import { Image } from 'expo-image';
+import { RecommendVideoResponse, RecommendVideoFetchResponse } from '@/api/models';
+import { contentApiClient } from '@/api';
 
-// --- 定义数据类型 (这是修复问题的核心步骤) ---
-interface RecommendVideo {
-  id: string;
-  title: string;
-  cover: string;
-  height: number;
-  eid: number;
-}
-
-interface ApiResponse {
-  data: RecommendVideo[];
-  count: number;
-  hasNextPage: boolean;
-  nextCursor: string | null;
-}
-
-// --- 你的视频数据 ---
-// 明确告诉 TypeScript，这个数组里的每一项都符合 QuestVideo 类型
-const recommendedVideos: RecommendVideo[] = [
-  {
-    id: "1",
-    title: "Unit 1 Intro - A Great Start",
-    cover: "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
-    // 为了瀑布流效果，我们可以给每个卡片一个不同的高度，模拟真实场景
-    // 在真实应用中，这个高度可能由图片宽高比决定
-    height: 220, 
-    eid:1
-  },
-  {
-    id: "2",
-    title: "Unit 2 Basics - Learn the Fundamentals of Everything and More",
-    cover: "https://img.youtube.com/vi/oHg5SJYRHA0/hqdefault.jpg",
-    height: 280,
-    eid:1
-  },
-  {
-    id: "3",
-    title: "Unit 3 Advanced Topics",
-    cover: "https://img.youtube.com/vi/ZZ5LpwO-An4/hqdefault.jpg",
-    height: 240,
-    eid:1
-  },
-  // 为了更好地展示瀑布流效果，我为你多加几条数据
-  {
-    id: "4",
-    title: "Reviewing Previous Concepts",
-    cover: "https://img.youtube.com/vi/3tmd-ClpJxA/hqdefault.jpg",
-    height: 260,
-    eid:1
-  },
-  {
-    id: "5",
-    title: "Special Guest Lecture: The Future of Tech",
-    cover: "https://img.youtube.com/vi/jNQXAC9IVRw/hqdefault.jpg",
-    height: 230,
-    eid:1
-  },
-  {
-    id: "6",
-    title: "Final Project Guidelines",
-    cover: "https://img.youtube.com/vi/C0DPdy98e4c/hqdefault.jpg",
-    height: 270,
-    eid:1
-  },
-];
-
-
-// --- 卡片组件定义 ---
-// 明确告诉 TypeScript，item prop 的类型是 QuestVideo
-const QuestCard = ({ item }: { item: RecommendVideo }) => {
+// 卡片组件保持不变
+const QuestCard = ({ item }: { item: RecommendVideoResponse }) => {
   return (
     <Pressable style={[styles.cardContainer, { height: item.height }]}>
-      <Image 
-        source={{ uri: item.cover }} 
+      <Image
+        source={{ uri: item.cover }}
         style={styles.thumbnail}
         contentFit="cover"
         transition={300}
@@ -89,33 +23,131 @@ const QuestCard = ({ item }: { item: RecommendVideo }) => {
 };
 
 
-// --- Quests 屏幕主组件 ---
+// Quests 屏幕主组件
 export default function Quests() {
+  const [videos, setVideos] = useState<RecommendVideoResponse[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasNextPage, setHasNextPage] = useState(true);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   
-  // --- 为 renderItem 函数定义类型 ---
-  // 这是最规范的做法
-  const renderQuestItem = ({ item }: ListRenderItemInfo<RecommendVideo>) => (
+  // [下拉刷新] 1. 添加一个新的 state 用于控制刷新动画的显示
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // 数据加载逻辑 loadVideos 保持不变
+  const loadVideos = useCallback(async (isInitialLoad = false) => {
+    // 防止在正在加载或没有更多数据时重复请求
+    if (isLoading || (!isInitialLoad && !hasNextPage)) {
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      const beforeCursor = nextCursor && !isInitialLoad ? parseInt(nextCursor, 10) : undefined;
+      
+      if (nextCursor && !isInitialLoad && isNaN(beforeCursor as number)) {
+          console.error("无效的游标格式:", nextCursor);
+          setIsLoading(false);
+          return;
+      }
+      
+      // 如果是初始加载或刷新，游标应该为 undefined
+      const cursorForAPI = isInitialLoad ? undefined : beforeCursor;
+      const response = await contentApiClient.recommendGetGet(2, undefined, cursorForAPI);
+      const apiData: RecommendVideoFetchResponse = response.data;
+
+      if (apiData.data) {
+        setVideos(prevVideos => isInitialLoad ? apiData.data! : [...prevVideos, ...apiData.data!]);
+        setHasNextPage(apiData.hasNextPage);
+        setNextCursor(apiData.nextCursor || null);
+      }
+    } catch (error) {
+      console.error("获取推荐视频失败:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isLoading, hasNextPage, nextCursor]);
+
+  // 组件首次加载时触发数据请求的 useEffect 保持不变
+  useEffect(() => {
+    loadVideos(true);
+  }, []);
+
+  // [下拉刷新] 2. 创建一个当用户下拉时触发的回调函数
+  const onRefresh = useCallback(async () => {
+    console.log("正在执行下拉刷新...");
+    setIsRefreshing(true); // 开始刷新，显示刷新动画
+    await loadVideos(true); // 调用加载函数，并传入 true 来重置数据
+    setIsRefreshing(false); // 加载完成后，隐藏刷新动画
+  }, []); // 使用空的依赖数组，因为该函数不依赖任何外部状态
+
+  // renderItem 函数保持不变
+  const renderQuestItem = ({ item }: ListRenderItemInfo<RecommendVideoResponse>) => (
     <QuestCard item={item} />
   );
+
+  // 列表页脚组件
+  const ListFooterComponent = () => {
+    // 当加载更多（而不是刷新时）并且有视频数据时，显示底部的加载动画
+    if (isLoading && !isRefreshing) {
+      return (
+        <View style={styles.footer}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      );
+    }
+    // 当没有更多页面时，显示提示信息
+    if (!hasNextPage && videos.length > 0) {
+        return (
+            <View style={styles.footer}>
+                <Text>没有更多视频了</Text>
+            </View>
+        );
+    }
+    return null;
+  };
+  
+  // 初始加载占位符保持不变
+  if (isLoading && videos.length === 0) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>正在加载推荐视频...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <MasonryFlashList
-        data={recommendedVideos}
-        keyExtractor={(item: RecommendVideo) => item.id} // 也可以在这里给 item 加类型
+        data={videos}
+        keyExtractor={(item: RecommendVideoResponse) => item.id.toString()}
         numColumns={2}
-        renderItem={renderQuestItem} // <--- 关键修改 2: 使用带类型的函数
+        renderItem={renderQuestItem}
         estimatedItemSize={250}
         contentContainerStyle={styles.listContainer}
+        // 实现无限滚动
+        onEndReached={() => loadVideos()}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={ListFooterComponent}
+        // [下拉刷新] 3. 将 state 和回调函数传递给列表组件
+        onRefresh={onRefresh}
+        refreshing={isRefreshing}
       />
     </View>
   );
 }
 
+// 样式表保持不变
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f0f2f5',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   listContainer: {
     paddingHorizontal: 5,
@@ -146,4 +178,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
+  footer: {
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  }
 });

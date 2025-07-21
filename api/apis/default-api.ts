@@ -41,6 +41,86 @@ import { WordlistFetchInfoResponse } from '../models';
 export const DefaultApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
+         * 上传一个包含英文摘要的文本文件和一个用户的录音文件，以启动一个异步的AI分析流程。服务器会立即返回一个用于查询结果的 job_id。
+         * @summary 启动分析任务
+         * @param {any} [summaryTxtFile] 一个 .txt 格式的文本文件，内容为待对比的英文摘要。
+         * @param {any} [userAudio] 用户的录音文件，支持 .mp3, .wav, .m4a 等主流音频格式。
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1AnalyzePost: async (summaryTxtFile?: any, userAudio?: any, options: any = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/analyze`;
+            const localVarUrlObj = globalImportUrl.parse(localVarPath, true);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new FormData();
+
+
+            if (summaryTxtFile !== undefined) { 
+                localVarFormParams.append('summary_txt_file', summaryTxtFile as any);
+            }
+    
+            if (userAudio !== undefined) { 
+                localVarFormParams.append('user_audio', userAudio as any);
+            }
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
+            localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
+            // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+            localVarUrlObj.search=null
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: globalImportUrl.format(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。
+         * @summary 查询任务结果
+         * @param {string} jobId 使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1ResultsJobIdGet: async (jobId: string, options: any = {}): Promise<RequestArgs> => {
+            // verify required parameter 'jobId' is not null or undefined
+            if (jobId === null || jobId === undefined) {
+                throw new RequiredError('jobId','Required parameter jobId was null or undefined when calling apiV1ResultsJobIdGet.');
+            }
+            const localVarPath = `/api/v1/results/{job_id}`
+                .replace(`{${"job_id"}}`, encodeURIComponent(String(jobId)));
+            const localVarUrlObj = globalImportUrl.parse(localVarPath, true);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
+            // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+            localVarUrlObj.search=null
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: globalImportUrl.format(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * 
          * @summary 获取段落信息
          * @param {number} id 要获取的段落的id
@@ -70,7 +150,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search=null
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -109,7 +189,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search=null
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -148,7 +228,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search=null
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -187,7 +267,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search=null
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -236,7 +316,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search=null
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -275,7 +355,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search=null
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -314,7 +394,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search=null
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -358,7 +438,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search=null
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -388,7 +468,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search=null
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -423,7 +503,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search=null
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -441,6 +521,35 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
  */
 export const DefaultApiFp = function(configuration?: Configuration) {
     return {
+        /**
+         * 上传一个包含英文摘要的文本文件和一个用户的录音文件，以启动一个异步的AI分析流程。服务器会立即返回一个用于查询结果的 job_id。
+         * @summary 启动分析任务
+         * @param {any} [summaryTxtFile] 一个 .txt 格式的文本文件，内容为待对比的英文摘要。
+         * @param {any} [userAudio] 用户的录音文件，支持 .mp3, .wav, .m4a 等主流音频格式。
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1AnalyzePost(summaryTxtFile?: any, userAudio?: any, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await DefaultApiAxiosParamCreator(configuration).apiV1AnalyzePost(summaryTxtFile, userAudio, options);
+            return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
+                const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
+                return axios.request(axiosRequestArgs);
+            };
+        },
+        /**
+         * 使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。
+         * @summary 查询任务结果
+         * @param {string} jobId 使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1ResultsJobIdGet(jobId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await DefaultApiAxiosParamCreator(configuration).apiV1ResultsJobIdGet(jobId, options);
+            return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
+                const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
+                return axios.request(axiosRequestArgs);
+            };
+        },
         /**
          * 
          * @summary 获取段落信息
@@ -593,6 +702,27 @@ export const DefaultApiFp = function(configuration?: Configuration) {
 export const DefaultApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
     return {
         /**
+         * 上传一个包含英文摘要的文本文件和一个用户的录音文件，以启动一个异步的AI分析流程。服务器会立即返回一个用于查询结果的 job_id。
+         * @summary 启动分析任务
+         * @param {any} [summaryTxtFile] 一个 .txt 格式的文本文件，内容为待对比的英文摘要。
+         * @param {any} [userAudio] 用户的录音文件，支持 .mp3, .wav, .m4a 等主流音频格式。
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1AnalyzePost(summaryTxtFile?: any, userAudio?: any, options?: any): AxiosPromise<object> {
+            return DefaultApiFp(configuration).apiV1AnalyzePost(summaryTxtFile, userAudio, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。
+         * @summary 查询任务结果
+         * @param {string} jobId 使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1ResultsJobIdGet(jobId: string, options?: any): AxiosPromise<object> {
+            return DefaultApiFp(configuration).apiV1ResultsJobIdGet(jobId, options).then((request) => request(axios, basePath));
+        },
+        /**
          * 
          * @summary 获取段落信息
          * @param {number} id 要获取的段落的id
@@ -704,6 +834,31 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
  * @extends {BaseAPI}
  */
 export class DefaultApi extends BaseAPI {
+    /**
+     * 上传一个包含英文摘要的文本文件和一个用户的录音文件，以启动一个异步的AI分析流程。服务器会立即返回一个用于查询结果的 job_id。
+     * @summary 启动分析任务
+     * @param {any} [summaryTxtFile] 一个 .txt 格式的文本文件，内容为待对比的英文摘要。
+     * @param {any} [userAudio] 用户的录音文件，支持 .mp3, .wav, .m4a 等主流音频格式。
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public apiV1AnalyzePost(summaryTxtFile?: any, userAudio?: any, options?: any) {
+        return DefaultApiFp(this.configuration).apiV1AnalyzePost(summaryTxtFile, userAudio, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。
+     * @summary 查询任务结果
+     * @param {string} jobId 使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public apiV1ResultsJobIdGet(jobId: string, options?: any) {
+        return DefaultApiFp(this.configuration).apiV1ResultsJobIdGet(jobId, options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * 
      * @summary 获取段落信息

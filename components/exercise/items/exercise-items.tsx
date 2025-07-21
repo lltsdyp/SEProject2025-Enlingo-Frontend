@@ -12,7 +12,7 @@ import { FlashCardItem } from "./flash-card-item";
 import { TranslateItem } from "./translate-item";
 import { VideoItem } from "./video-item";
 import { DefaultApiFactory } from "@/api/apis/default-api";
-import { apiClient } from "@/api";
+import { contentApiClient } from "@/api";
 import { RetellingItem } from "./retelling-item";
 
 // import {}
@@ -48,7 +48,7 @@ export default function ExerciseItems({
       <VideoItem
         exercise={exerciseItem as VideoExercise}
         onTranslateRequest={async (text) => {
-          await apiClient.wordlistAddPost(text.trim());
+          await contentApiClient.wordlistAddPost(text.trim());
           // TODO
           console.log(`需要翻译: "${text}"`);
         }}

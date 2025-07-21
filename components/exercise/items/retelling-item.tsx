@@ -12,6 +12,8 @@ import { Audio } from "expo-av";
 import { ExerciseItemProps, RetellingExercise } from "@/types/course"; // 假设您的类型定义路径
 import { Button } from "@/components/ui/button"; // 复用您的按钮组件
 import { ExerciseItemEvent } from "./exercise-item-event";
+import { aiApiClient, contentApiClient } from "@/api";
+import { AxiosError } from "axios";
 
 // --- Props 和类型定义 ---
 
@@ -43,7 +45,7 @@ interface MediaRecorderRef {
  * - 根据后端的返回结果显示成功或失败状态。
  */
 export function RetellingItem({
-  onRetellingSubmit,
+  exercise,
   onContinue,
   onResult,
 }: Props) {
@@ -52,12 +54,12 @@ export function RetellingItem({
   const [isSuccess, setIsSuccess] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const [processingStage, setProcessingStage] = useState<string | null>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   // --- Refs ---
-  // Expo AV (React Native) 的录音对象引用
   const recordingRef = useRef<Audio.Recording | null>(null);
-  // Web API (Web) 的 MediaRecorder 引用
   const mediaRecorderRef = useRef<MediaRecorderRef>({ current: null });
-  // 用于存储Web端录音数据块
   const audioChunksRef = useRef<Blob[]>([]);
 
   // 当 isSuccess 状态改变时，调用 onResult 回调
@@ -67,8 +69,121 @@ export function RetellingItem({
     }
   }, [isSuccess]);
 
-  // --- 核心录音逻辑 ---
+  useEffect(() => {
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, []);
 
+  // --- 核心录音逻辑 ---
+  // (变动 7: 全新功能) 新增的轮询函数，这是实现异步任务结果获取的核心。
+  // 最开始的版本完全没有此功能。
+  const pollForResult = (jobId: string) => {
+    const maxAttempts = 20; // 最多轮询20次（例如 20 * 2s = 40s 后超时）
+    let attempts = 0;
+
+    const poll = async () => {
+      // 检查是否已达到最大尝试次数
+      if (attempts >= maxAttempts) {
+        // 清除定时器以停止轮询
+        clearInterval(pollingIntervalRef.current!);
+        pollingIntervalRef.current = null; // 标记为已停止
+
+        // 设置UI状态为失败
+        setError("分析超时，请稍后再试或检查网络连接。");
+        setIsSuccess(false);
+        setIsUploading(false); // 结束“处理中”状态
+        setProcessingStage(null);
+        return; // 退出函数
+      }
+      
+      attempts++;
+
+      try {
+        console.log(`Polling for job ${jobId}, attempt #${attempts}`); // 方便调试
+        const response = await aiApiClient.apiV1ResultsJobIdGet(jobId);
+
+        // 假设API的响应数据模型是已知的，可以进行类型断言以获得更好的类型提示
+        // 如果没有精确类型，使用 `any` 也可以
+        const data = response.data as {
+          status: 'completed' | 'processing' | 'failed';
+          stage: string | null;
+          error: string | null;
+          result: {
+            overall_score: number;
+            // ... 其他结果字段
+          } | null;
+        };
+
+        // 根据API返回的状态更新UI
+        switch (data.status) {
+          case "completed":
+            // 任务成功完成
+            clearInterval(pollingIntervalRef.current!);
+            pollingIntervalRef.current = null;
+
+            // 根据业务逻辑判断成功或失败（例如，分数是否达标）
+            const success = (data.result?.overall_score ?? 0) > 75;
+            setIsSuccess(success);
+            
+            if (!success) {
+              setError("评估未通过，请再试一次。");
+            }
+            
+            setIsUploading(false);
+            setProcessingStage(null);
+            break;
+
+          case "failed":
+            // 任务处理失败
+            clearInterval(pollingIntervalRef.current!);
+            pollingIntervalRef.current = null;
+
+            // 使用后端返回的明确错误信息
+            setError(data.error || "分析失败，发生未知错误。");
+            setIsSuccess(false);
+            setIsUploading(false);
+            setProcessingStage(null);
+            break;
+
+          case "processing":
+            // 任务仍在处理中，更新UI提示
+            setProcessingStage(data.stage || "正在分析...");
+            // 不做任何操作，等待下一次轮询
+            break;
+            
+          default:
+            // 收到未知的状态，记录日志，继续轮询
+            console.warn(`Received unknown status from API: ${data.status}`);
+            break;
+        }
+      } catch (err) {
+        const axiosError = err as AxiosError;
+        // 检查是否是 404 错误
+        if (axiosError.response?.status === 404) {
+          // 404 是一个明确的、可立即终止的错误
+          clearInterval(pollingIntervalRef.current!);
+          pollingIntervalRef.current = null;
+
+          setError("任务ID未找到，提交可能已失败。");
+          setIsSuccess(false);
+          setIsUploading(false);
+          setProcessingStage(null);
+        } else {
+          // 对于其他网络错误（如 500 服务器错误、网络中断），
+          // 我们选择不立即终止轮询，而是允许它在下一次尝试时自动恢复。
+          // 这样可以增强应用的健壮性，以应对暂时的网络抖动。
+          console.error("Polling request failed:", axiosError.message);
+        }
+      }
+    };
+
+    // 立即执行第一次轮询，然后设置定时器进行后续轮询
+    poll();
+    pollingIntervalRef.current = setInterval(poll, 2000); // 每 2 秒轮询一次
+  };
   const handleToggleRecording = async () => {
     // 如果正在录音，则停止
     if (isRecording) {
@@ -170,22 +285,38 @@ export function RetellingItem({
 
   // --- 数据处理与提交 ---
 
+  // (变动 6: 完全重写) 此函数从一个简单的回调调用，被重写为处理完整API流程的核心业务函数。
   const handleSendRecording = async (
     recording: File | { uri: string; name: string; type: string }
   ) => {
+    // 在最开始的版本中，此函数仅有一行: `await onRetellingSubmit(recording);`
+    // 现在，它负责整个工作流：
     try {
-      // 调用父组件传入的回调函数，将录音数据发送到后端
-      const success = await onRetellingSubmit(recording);
-      setIsSuccess(success);
-      if (!success) {
-        setError("复述评估失败，请再试一次。");
-      }
-    } catch (err) {
-      console.error("Error submitting retelling:", err);
-      setError("提交录音时发生网络错误。");
+      // 步骤 A: (新) 从 props.exercise.content 创建摘要文件。原版本不关心此数据。
+      const summaryBlob = new Blob([exercise.content], { type: "text/plain" });
+      const audioPayload = Platform.OS === 'web'
+        ? (recording as File)
+        : { uri: (recording as any).uri, name: (recording as any).name, type: (recording as any).type };
+
+      setProcessingStage("正在上传文件...");
+
+      // 步骤 B: (新) 调用生成的API客户端方法启动分析任务，替换了原有的 onRetellingSubmit()。
+      const response = await aiApiClient.apiV1AnalyzePost(summaryBlob, audioPayload);
+
+      // 步骤 C: (新) 从API响应中获取 job_id，这是后续轮询的关键。
+      const job_id = (response.data as any).job_id;
+      if (!job_id) { throw new Error("未能从API响应中获取 job_id。"); }
+
+      // 步骤 D: (新) 调用新增的轮询函数，开始获取最终结果。
+      pollForResult(job_id);
+
+    } catch (err: any) {
+      // 步骤 E: (新) 增强了错误处理，能从Axios错误中提取后端返回的具体信息。
+      const errorMessage = err.response?.data?.message || err.message || "提交录音时发生网络错误。";
+      setError(errorMessage);
       setIsSuccess(false);
-    } finally {
       setIsUploading(false);
+      setProcessingStage(null);
     }
   };
 
@@ -206,8 +337,6 @@ export function RetellingItem({
       return status === "granted";
     }
   };
-
-  // --- UI渲染 ---
 
   // 录音按钮的动态内容
   const renderButtonContent = () => {
@@ -290,7 +419,7 @@ export function RetellingItem({
         isSuccess={isSuccess}
         // 将我们新创建的函数传递给 "Check" 按钮的回调
         // 在此场景下，它不会被触发，但 prop 是必需的
-        onPressCheck={() => {}}
+        onPressCheck={() => { }}
         // 将我们新创建的函数传递给 "Continue" 按钮的回调
         onPressContinue={handlePressContinue}
       />

@@ -33,7 +33,9 @@ export interface VideoExercise extends Exercise{
   srt:  string;
 }
 
-export interface RetellingExercise extends Exercise {}
+export interface RetellingExercise extends Exercise {
+  content: string;
+}
 
 export interface TranslateExerciseWord extends ExerciseWord {}
 
@@ -48,7 +50,7 @@ export interface TranslateExercise extends Exercise {
   correctOrderIds: { [key in SupportedLanguageCode]: number[] };
 }
 
-export type ExerciseItemVariant = FlashCardExercise | TranslateExercise | VideoExercise;
+export type ExerciseItemVariant = FlashCardExercise | TranslateExercise | VideoExercise | RetellingExercise;
 
 export type ExerciseSetId={id: number};
 

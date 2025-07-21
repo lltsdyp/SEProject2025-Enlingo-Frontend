@@ -27,26 +27,6 @@ export function useExercise(exerciseId: ExerciseSetId): { exercise: ExerciseSet,
   return { exercise: exercise as ExerciseSet, isLoading, isError }
 }
 
-// --- 1. useCourseContent Hook：从缓存读取已组合的数据 ---
-// export function useCourseContent(): Course | null {
-//   const queryClient = useQueryClient();
-//   const { languageCode } = useLanguageCode();
-
-//   // 从缓存中获取已经通过 getSections 填充好的 sections (Chapter 和 Lesson 已填充)
-//   const sectionsData = queryClient.getQueryData<Section[]>(['sections', languageCode]);
-//   // 从缓存中获取 characters
-//   const charactersData = characters as LanguageCharacters;
-
-//   // 如果任何核心数据块缺失，则返回 null (表示数据未完全加载)
-//   if (!sectionsData || !characters) {
-//     return null;
-//   }
-//   return {
-//     sections: sectionsData,
-//     characters: charactersData,
-//   };
-// }
-
 export function useCourseContent() {
   const { languageCode } = useLanguageCode();
 
@@ -57,17 +37,10 @@ export function useCourseContent() {
     isLoading: isSectionsLoading,
     isError: isSectionsError,
   } = useQuery({
-    // queryKey: 查询的唯一标识符。它必须是一个数组。
-    // 当 languageCode 改变时，React Query 会自动重新获取数据。
     queryKey: ['sections', languageCode],
 
-    // queryFn: 获取数据的异步函数。
-    // 它必须返回一个 Promise。
     queryFn: () => getSections(languageCode),
 
-    // enabled: 一个非常有用的选项。
-    // 只有当 languageCode 存在时，这个查询才会被激活。
-    // 这可以防止在 languageCode 初始为空时发送无效的API请求。
     enabled: !!languageCode,
   });
 

@@ -34,20 +34,21 @@ const axiosInstance = axios.create({
   // 你可以在这里添加 baseURL，但生成代码的配置更优先
 });
 
-// 2. 创建 API 配置对象
-const apiConfig = new Configuration({
+const contentApiConfig = new Configuration({
   // 这个 basePath 会覆盖生成代码中的默认值
-  basePath: 'http://vilingo.hbgpfxgcdxhcbphg.eastasia.azurecontainer.io:8080',
+  basePath: 'http://26l1b06988.qicp.vip:38080',
 });
+export const contentApiClient = new DefaultApi(contentApiConfig, undefined, axiosInstance);
 
-// 3. 实例化你的 API 客户端，并传入配置和 axios 实例
-//    这就是你将在整个应用中使用的 API 对象
-export const apiClient = new DefaultApi(apiConfig, undefined, axiosInstance);
+const aiApiConfig = new Configuration({
+  basePath: 'http://26l1b06988.qicp.vip:40000', // TODO: substitude
+});
+export const aiApiClient = new DefaultApi(aiApiConfig, undefined, axiosInstance);
 
 // getSections 现在将直接返回完整的嵌套对象（除了 Lesson.exercises）
 export const getSections = async (lang: string): Promise<Section[]> => {
   try {
-    const response = await apiClient.contentSectionsGet(lang);
+    const response = await contentApiClient.contentSectionsGet(lang);
     // const response = { data: require('@/mock/content/sections.json') };
 
 
@@ -160,26 +161,26 @@ export const getExerciseSetById = async (exerciseId: number): Promise<ExerciseSe
           srt: item.srt,
         }
       }
-      else if(item.type === 'retelling'){
+      else if (item.type === 'retelling') {
         console.info("Detected Retelling Exercise Item");
         return {
-          id:item.id,
+          id: item.id,
           type: 'retelling' as const,
-          question:{
-            en:"TODO",
-            ja:"TODO",
-            cn:"TODO"
+          question: {
+            en: "TODO",
+            ja: "TODO",
+            cn: "TODO"
           },
-          content:item.content
+          content: item.content
         }
       }
-      else{
+      else {
         console.warn("Invalid exercise item type:", item.type);
         throw new Error('Invalid exercise item type:');
       }
     }
     else {
-      console.warn("Item:",item);
+      console.warn("Item:", item);
       throw new Error('Invalid exercise item');
     }
   })
