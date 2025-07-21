@@ -17,32 +17,32 @@
 /**
  * 
  * @export
- * @interface WordlistFetchInfoResponse
+ * @interface WorksheetFetchInfoResponse
  */
-export interface WordlistFetchInfoResponse {
+export interface WorksheetFetchInfoResponse {
     /**
-     * 本次获取的单词数量
-     * @type {number}
-     * @memberof WordlistFetchInfoResponse
-     */
-    'number'?: number;
-    /**
-     * 获取到的单词列表
+     * 获取到的单词列表，第一个单词是正确答案
      * @type {Array<string>}
-     * @memberof WordlistFetchInfoResponse
+     * @memberof WorksheetFetchInfoResponse
      */
     'list': Array<string>;
     /**
      * 是否还有更多单词
      * @type {boolean}
-     * @memberof WordlistFetchInfoResponse
+     * @memberof WorksheetFetchInfoResponse
      */
     'hasNextPage': boolean;
     /**
      * 下一个单词
      * @type {string}
-     * @memberof WordlistFetchInfoResponse
+     * @memberof WorksheetFetchInfoResponse
      */
     'nextWord': string | null;
+    /**
+     * 正确单词对应的中文翻译
+     * @type {string}
+     * @memberof WorksheetFetchInfoResponse
+     */
+    'translation': string;
 }
 

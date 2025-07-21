@@ -14,5 +14,23 @@
 
 
 
-export * from './apis/default-api';
+/**
+ * 
+ * @export
+ * @interface WordlistTranslateGet200Response
+ */
+export interface WordlistTranslateGet200Response {
+    /**
+     * 简短翻译
+     * @type {string}
+     * @memberof WordlistTranslateGet200Response
+     */
+    'simple_trans': string;
+    /**
+     * 复杂释义
+     * @type {string}
+     * @memberof WordlistTranslateGet200Response
+     */
+    'more_trans': string;
+}
 

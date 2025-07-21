@@ -14,5 +14,17 @@
 
 
 
-export * from './apis/default-api';
+/**
+ * 
+ * @export
+ * @interface VideoSubtitleGet200Response
+ */
+export interface VideoSubtitleGet200Response {
+    /**
+     * 
+     * @type {string}
+     * @memberof VideoSubtitleGet200Response
+     */
+    'url': string;
+}
 

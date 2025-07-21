@@ -13,24 +13,17 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { RetellingExerciseResponse } from './retelling-exercise-response';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { VideoExerciseResponse } from './video-exercise-response';
 
 /**
- * 
+ * @type ExerciseInfoResponseItemsInner
  * @export
- * @interface RetellingExerciseResponse
  */
-export interface RetellingExerciseResponse {
-    /**
-     * 
-     * @type {string}
-     * @memberof RetellingExerciseResponse
-     */
-    'type': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RetellingExerciseResponse
-     */
-    'content': string;
-}
+export type ExerciseInfoResponseItemsInner = RetellingExerciseResponse | VideoExerciseResponse;
+
 

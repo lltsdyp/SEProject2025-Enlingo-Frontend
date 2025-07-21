@@ -4,6 +4,8 @@ All URIs are relative to *http://localhost*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
+|[**apiV1ResultsJobIdGet**](#apiv1resultsjobidget) | **GET** /api/v1/results/{job_id} | 查询任务结果|
+|[**apiViAnalyzeGet**](#apivianalyzeget) | **GET** /api/vi/analyze | 启动分析任务|
 |[**contentChapterGet**](#contentchapterget) | **GET** /content/chapter | 获取段落信息|
 |[**contentExerciseGet**](#contentexerciseget) | **GET** /content/exercise | 获取练习信息|
 |[**contentLessonGet**](#contentlessonget) | **GET** /content/lesson | 获取课程信息|
@@ -16,6 +18,112 @@ All URIs are relative to *http://localhost*
 |[**wordlistGetGet**](#wordlistgetget) | **GET** /wordlist/get | 获取生词表|
 |[**wordlistRandomwordGet**](#wordlistrandomwordget) | **GET** /wordlist/randomword | 获取四个随机单词|
 |[**wordlistTranslateGet**](#wordlisttranslateget) | **GET** /wordlist/translate | 获取单词翻译|
+
+# **apiV1ResultsJobIdGet**
+> object apiV1ResultsJobIdGet()
+
+使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let jobId: string; //使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。 (default to undefined)
+
+const { status, data } = await apiInstance.apiV1ResultsJobIdGet(
+    jobId
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **jobId** | [**string**] | 使用从“启动分析任务”接口获取的 job_id，轮询此接口以获取任务的当前状态或最终的分析结果。 | defaults to undefined|
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** |  |  -  |
+|**404** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiViAnalyzeGet**
+> object apiViAnalyzeGet()
+
+上传一个包含英文摘要的文本文件和一个用户的录音文件，以启动一个异步的AI分析流程。服务器会立即返回一个用于查询结果的 job_id。
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let summaryTxtFile: File; //一个 .txt 格式的文本文件，内容为待对比的英文摘要。 (optional) (default to undefined)
+let userAudio: File; //用户的录音文件，支持 .mp3, .wav, .m4a 等主流音频格式。 (optional) (default to undefined)
+
+const { status, data } = await apiInstance.apiViAnalyzeGet(
+    summaryTxtFile,
+    userAudio
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **summaryTxtFile** | [**File**] | 一个 .txt 格式的文本文件，内容为待对比的英文摘要。 | (optional) defaults to undefined|
+| **userAudio** | [**File**] | 用户的录音文件，支持 .mp3, .wav, .m4a 等主流音频格式。 | (optional) defaults to undefined|
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**202** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **contentChapterGet**
 > ChapterInfoResponse contentChapterGet()

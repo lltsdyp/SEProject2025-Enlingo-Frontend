@@ -5,6 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**type** | **string** |  | [default to undefined]
 **content** | **string** |  | [default to undefined]
 
 ## Example
@@ -13,6 +14,7 @@ Name | Type | Description | Notes
 import { RetellingExerciseResponse } from './api';
 
 const instance: RetellingExerciseResponse = {
+    type,
     content,
 };
 ```
