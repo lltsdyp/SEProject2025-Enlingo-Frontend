@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Pressable, View, Animated, Dimensions } from "react-native";
+import { Pressable, View, Animated, Dimensions, StyleSheet } from "react-native";
 
 import { Text } from "@/components/themed";
 import { layouts } from "@/constants/layouts";
@@ -26,6 +26,11 @@ export default function VocabularyPractice() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  
+  // 新增：循环复习相关状态
+  const [completedRounds, setCompletedRounds] = useState(0);
+  const [showRestartDialog, setShowRestartDialog] = useState(false);
+  const [allWordsLoaded, setAllWordsLoaded] = useState(false);
 
   // 获取生词列表的函数
   const fetchWords = useCallback(async (before?: string, append: boolean = false) => {
@@ -61,6 +66,11 @@ export default function VocabularyPractice() {
       setHasNextPage(response.data.hasNextPage);
       setNextWord(response.data.nextWord ?? undefined);
       setRetryCount(0); // 成功后重置重试计数
+      
+      // 检查是否已加载完所有单词
+      if (!response.data.hasNextPage) {
+        setAllWordsLoaded(true);
+      }
       
     } catch (error: unknown) {
       console.error('❌ 获取生词列表失败:', error);
@@ -99,6 +109,15 @@ export default function VocabularyPractice() {
     console.log('🔄 手动重试加载');
     fetchWords();
   }, [fetchWords]);
+
+  // 重新开始复习函数
+  const restartReview = useCallback(() => {
+    console.log('🔄 重新开始复习');
+    setCurrentIndex(0);
+    setCompletedRounds(prev => prev + 1);
+    setShowRestartDialog(false);
+    slideAnim.setValue(0);
+  }, [slideAnim]);
 
   // 初始加载
   useEffect(() => {
@@ -232,6 +251,158 @@ export default function VocabularyPractice() {
   const currentWord = words[currentIndex];
   const progress = ((currentIndex + 1) / words.length) * 100;
 
+  // 重新开始确认对话框
+  if (showRestartDialog) {
+    return (
+      <View style={{ flex: 1, backgroundColor: background }}>
+        {/* 背景遮罩 */}
+        <View
+          style={{
+            ...StyleSheet.absoluteFillObject,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          }}
+        />
+        
+        {/* 对话框 */}
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingHorizontal: layouts.padding * 2,
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: background,
+              borderRadius: layouts.padding * 2,
+              padding: layouts.padding * 3,
+              minWidth: width * 0.8,
+              maxWidth: 400,
+              borderWidth: 1,
+              borderColor: border,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 10 },
+              shadowOpacity: 0.25,
+              shadowRadius: 20,
+              elevation: 15,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: 'bold',
+                color: foreground,
+                textAlign: 'center',
+                marginBottom: layouts.padding * 2,
+              }}
+            >
+              🎉 恭喜完成复习！
+            </Text>
+            
+            <Text
+              style={{
+                fontSize: 16,
+                color: foreground,
+                textAlign: 'center',
+                marginBottom: layouts.padding,
+                lineHeight: 24,
+              }}
+            >
+              你已经完成了所有 {words.length} 个单词的复习
+            </Text>
+            
+            {completedRounds > 0 && (
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: mutedForeground,
+                  textAlign: 'center',
+                  marginBottom: layouts.padding * 2,
+                }}
+              >
+                这是第 {completedRounds + 1} 轮复习
+              </Text>
+            )}
+            
+            <Text
+              style={{
+                fontSize: 14,
+                color: mutedForeground,
+                textAlign: 'center',
+                marginBottom: layouts.padding * 3,
+              }}
+            >
+              继续练习还是回到学习页面？
+            </Text>
+            
+            {/* 按钮组 */}
+            <View
+              style={{
+                flexDirection: 'row',
+                gap: layouts.padding,
+                justifyContent: 'center',
+              }}
+            >
+              <Pressable
+                onPress={() => router.push("/learn")}
+                style={({ pressed }) => ({
+                  backgroundColor: pressed ? border : background,
+                  paddingVertical: layouts.padding * 1.5,
+                  paddingHorizontal: layouts.padding * 2,
+                  borderRadius: layouts.padding,
+                  borderWidth: 1,
+                  borderColor: border,
+                  flex: 1,
+                  maxWidth: 120,
+                })}
+              >
+                <Text
+                  style={{
+                    color: mutedForeground,
+                    fontWeight: '600',
+                    textAlign: 'center',
+                    fontSize: 14,
+                  }}
+                >
+                  返回学习
+                </Text>
+              </Pressable>
+              
+              <Pressable
+                onPress={restartReview}
+                style={({ pressed }) => ({
+                  backgroundColor: pressed ? '#3b82f6' : accent,
+                  paddingVertical: layouts.padding * 1.5,
+                  paddingHorizontal: layouts.padding * 2,
+                  borderRadius: layouts.padding,
+                  flex: 1,
+                  maxWidth: 120,
+                  shadowColor: accent,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 8,
+                  elevation: 4,
+                })}
+              >
+                <Text
+                  style={{
+                    color: 'white',
+                    fontWeight: '700',
+                    textAlign: 'center',
+                    fontSize: 14,
+                  }}
+                >
+                  再来一轮
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
   // 点击认识或不认识，切换下一词或跳回主页
   const onAnswer = (isKnown: boolean) => {
     // 添加按钮点击动画
@@ -258,12 +429,18 @@ export default function VocabularyPractice() {
         setCurrentIndex(currentIndex + 1);
         slideAnim.setValue(0);
       } else {
+        // 到达最后一个单词
         if (hasNextPage && !isLoadingMore && nextWord) {
+          // 还有更多单词需要加载
           fetchWords(nextWord, true).then(() => {
             setCurrentIndex(currentIndex + 1);
             slideAnim.setValue(0);
           });
+        } else if (allWordsLoaded || !hasNextPage) {
+          // 所有单词都已复习完，显示重新开始对话框
+          setShowRestartDialog(true);
         } else {
+          // 兜底：回到学习页面
           router.push("/learn");
         }
       }
@@ -310,17 +487,32 @@ export default function VocabularyPractice() {
       </View>
 
       {/* 进度文本 */}
-      <Text
-        style={{
-          textAlign: 'center',
-          color: mutedForeground,
-          fontSize: 14,
-          marginTop: layouts.padding,
-          marginBottom: layouts.padding * 4,
-        }}
-      >
-        {currentIndex + 1} / {words.length}{hasNextPage ? '+' : ''}
-      </Text>
+      <View style={{ alignItems: 'center', marginTop: layouts.padding }}>
+        <Text
+          style={{
+            textAlign: 'center',
+            color: mutedForeground,
+            fontSize: 14,
+            marginBottom: 4,
+          }}
+        >
+          {currentIndex + 1} / {words.length}{hasNextPage ? '+' : ''}
+        </Text>
+        
+        {/* 显示轮数信息 */}
+        {completedRounds > 0 && (
+          <Text
+            style={{
+              textAlign: 'center',
+              color: accent,
+              fontSize: 12,
+              fontWeight: '600',
+            }}
+          >
+            第 {completedRounds + 1} 轮复习
+          </Text>
+        )}
+      </View>
 
       {/* 主要内容区域 */}
       <View
@@ -329,6 +521,7 @@ export default function VocabularyPractice() {
           justifyContent: 'center',
           alignItems: 'center',
           paddingHorizontal: layouts.padding * 2,
+          marginTop: layouts.padding * 2,
         }}
       >
         {/* 单词卡片 */}
