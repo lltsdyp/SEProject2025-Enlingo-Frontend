@@ -31,6 +31,40 @@ export default function VocabularyPractice() {
   const [completedRounds, setCompletedRounds] = useState(0);
   const [showRestartDialog, setShowRestartDialog] = useState(false);
   const [allWordsLoaded, setAllWordsLoaded] = useState(false);
+  
+  // 新增：删除单词相关状态
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // 删除单词的函数
+  const deleteWord = useCallback(async (word: string) => {
+    try {
+      setIsDeleting(true);
+      console.log('🗑️ 开始删除生词:', word);
+      
+      await contentApiClient.wordlistDeletePost(word);
+      
+      console.log('✅ 生词删除成功:', word);
+      
+      // 从本地状态中移除该单词
+      setWords(prevWords => {
+        const newWords = prevWords.filter(w => w !== word);
+        console.log('📝 更新后剩余单词数:', newWords.length);
+        return newWords;
+      });
+      
+    } catch (error: unknown) {
+      console.error('❌ 删除生词失败:', error);
+      
+      // 可以在这里添加错误提示，比如toast或者临时状态
+      const errorMessage = error instanceof Error ? error.message : '删除失败';
+      console.error('❌ 删除错误详情:', errorMessage);
+      
+      // 你可以根据需要添加用户错误反馈
+      // setError(`删除失败: ${errorMessage}`);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, []);
 
   // 获取生词列表的函数
   const fetchWords = useCallback(async (before?: string, append: boolean = false) => {
@@ -148,6 +182,14 @@ export default function VocabularyPractice() {
     }
   }, [currentIndex, words.length, hasNextPage, nextWord, isLoadingMore, fetchWords]);
 
+  // 检查是否因删除单词导致需要调整currentIndex
+  useEffect(() => {
+    if (words.length > 0 && currentIndex >= words.length) {
+      // 如果当前索引超出范围，调整到最后一个单词
+      setCurrentIndex(words.length - 1);
+    }
+  }, [words.length, currentIndex]);
+
   // 加载中状态
   if (loading && words.length === 0) {
     return (
@@ -251,15 +293,25 @@ export default function VocabularyPractice() {
   const currentWord = words[currentIndex];
   const progress = ((currentIndex + 1) / words.length) * 100;
 
-  // 重新开始确认对话框
+  // 重新开始确认对话框 - 修改z-index使其在所有内容之上
   if (showRestartDialog) {
     return (
-      <View style={{ flex: 1, backgroundColor: background }}>
+      <View style={{ 
+        flex: 1, 
+        backgroundColor: background,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 0, // 确保在最上层
+      }}>
         {/* 背景遮罩 */}
         <View
           style={{
             ...StyleSheet.absoluteFillObject,
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 9999,
           }}
         />
         
@@ -270,6 +322,7 @@ export default function VocabularyPractice() {
             justifyContent: 'center',
             alignItems: 'center',
             paddingHorizontal: layouts.padding * 2,
+            zIndex: 10000,
           }}
         >
           <View
@@ -404,7 +457,7 @@ export default function VocabularyPractice() {
   }
 
   // 点击认识或不认识，切换下一词或跳回主页
-  const onAnswer = (isKnown: boolean) => {
+  const onAnswer = async (isKnown: boolean) => {
     // 添加按钮点击动画
     Animated.sequence([
       Animated.timing(scaleAnim, {
@@ -419,13 +472,21 @@ export default function VocabularyPractice() {
       }),
     ]).start();
 
+    // 如果点击"认识"，调用删除API
+    if (isKnown && currentWord && !isDeleting) {
+      await deleteWord(currentWord);
+    }
+
     // 添加滑动切换动画
     Animated.timing(slideAnim, {
       toValue: 1,
       duration: 300,
       useNativeDriver: true,
     }).start(() => {
-      if (currentIndex < words.length - 1) {
+      // 检查删除后是否还有单词
+      const remainingWords = isKnown ? words.filter(w => w !== currentWord) : words;
+      
+      if (currentIndex < remainingWords.length - 1) {
         setCurrentIndex(currentIndex + 1);
         slideAnim.setValue(0);
       } else {
@@ -436,7 +497,7 @@ export default function VocabularyPractice() {
             setCurrentIndex(currentIndex + 1);
             slideAnim.setValue(0);
           });
-        } else if (allWordsLoaded || !hasNextPage) {
+        } else if (allWordsLoaded || !hasNextPage || remainingWords.length <= 1) {
           // 所有单词都已复习完，显示重新开始对话框
           setShowRestartDialog(true);
         } else {
@@ -580,6 +641,7 @@ export default function VocabularyPractice() {
         {/* 不认识按钮 */}
         <Pressable
           onPress={() => onAnswer(false)}
+          disabled={isDeleting}
           style={({ pressed }) => ({
             backgroundColor: pressed ? '#ef4444' : '#fef2f2',
             paddingVertical: layouts.padding * 1.5,
@@ -600,6 +662,7 @@ export default function VocabularyPractice() {
             alignItems: 'center',
             justifyContent: 'center',
             gap: 6,
+            opacity: isDeleting ? 0.6 : 1,
           })}
         >
           <Text
@@ -617,6 +680,7 @@ export default function VocabularyPractice() {
         {/* 认识按钮 */}
         <Pressable
           onPress={() => onAnswer(true)}
+          disabled={isDeleting}
           style={({ pressed }) => ({
             backgroundColor: pressed ? '#22c55e' : '#f0fdf4',
             paddingVertical: layouts.padding * 1.5,
@@ -637,6 +701,7 @@ export default function VocabularyPractice() {
             alignItems: 'center',
             justifyContent: 'center',
             gap: 6,
+            opacity: isDeleting ? 0.6 : 1,
           })}
         >
           <Text
@@ -647,7 +712,7 @@ export default function VocabularyPractice() {
               textAlign: 'center',
             }}
           >
-            认识
+            {isDeleting ? '处理中...' : '认识'}
           </Text>
         </Pressable>
         </Animated.View>
@@ -663,6 +728,18 @@ export default function VocabularyPractice() {
           }}
         >
           诚实地选择你的熟悉程度
+        </Text>
+        
+        {/* 删除提示文本 */}
+        <Text
+          style={{
+            textAlign: 'center',
+            color: mutedForeground,
+            fontSize: 12,
+            marginTop: layouts.padding,
+          }}
+        >
+          选择"认识"将从生词本中移除该单词
         </Text>
         
         {/* 加载更多提示 */}
