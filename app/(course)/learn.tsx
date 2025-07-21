@@ -25,6 +25,7 @@ export default function Learn() {
   const { mutedForeground, border, accent } = useTheme();
   const breakpoint = useBreakpoint();
   const { course:courseContent, isLoading, isError } = useCourseContent();
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   // 1. 处理加载状态
   if (isLoading) {
@@ -47,7 +48,6 @@ export default function Learn() {
   console.log(courseContent);
 
 
-  const [headerHeight, setHeaderHeight] = useState(0);
 
   let isOdd = true;
   let translateX = 0;
