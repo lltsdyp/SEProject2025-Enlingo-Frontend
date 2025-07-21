@@ -48,6 +48,7 @@ export const aiApiClient = new DefaultApi(aiApiConfig, undefined, axiosInstance)
 // getSections 现在将直接返回完整的嵌套对象（除了 Lesson.exercises）
 export const getSections = async (lang: string): Promise<Section[]> => {
   try {
+    console.info("GET request lang=",lang);
     const response = await contentApiClient.contentSectionsGet(lang);
     // const response = { data: require('@/mock/content/sections.json') };
 
