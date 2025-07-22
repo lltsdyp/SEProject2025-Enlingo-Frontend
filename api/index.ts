@@ -142,8 +142,8 @@ export const getLessonById = async (lessonIdx: number): Promise<Lesson> => {
  * @param exerciseId
  */
 export const getExerciseSetById = async (exerciseId: number): Promise<ExerciseSet> => {
-  // const response = await apiClient.contentExerciseGet(exerciseId);
-  const response = { data: require('@/mock/content/exercise.json') };
+  const response = await contentApiClient.contentExerciseGet(exerciseId);
+  // const response = { data: require('@/mock/content/exercise.json') };
   console.info("Exercise Response", response.data);
   const mappedItems = response.data.items.map((item: ExerciseInfoResponse | object) => {
     if ('id' in item && 'type' in item) {

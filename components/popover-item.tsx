@@ -134,7 +134,7 @@ export const PopoverItem: React.FC<PopoverItemProps> = ({
           // exerciseIdx 应该是当前获取到的 currentExercise.id
           if (isFinishedLesson) {
             router.push(
-              `/pratice/${sectionIdx}/${chapterIdx}/${lessonIdx}/${currentExercise.id}` // 使用 currentExercise.id
+              `/lesson?exerciseId=${currentExercise.id}` // 使用 currentExercise.id
             );
           } else {
             router.push("/lesson"); // 如果不完成，导航到通用课程页
