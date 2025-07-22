@@ -1,13 +1,14 @@
 // components/InteractiveVideoPlayer.tsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { View, Text, StyleSheet, Platform } from "react-native";
 import { Video, ResizeMode, AVPlaybackStatus } from "expo-av";
 import Parser from "srt-parser-2";
 import { ExerciseItemProps, VideoExercise } from "@/types/course";
 import { ExerciseItemEvent } from "./exercise-item-event";
 import { Button } from "@/components/ui/button";
+import { contentApiClient } from "@/api";
 
-// ... Props 和类型定义 (与之前相同) ...
+// Props 和类型定义
 interface Props extends ExerciseItemProps {
   exercise: VideoExercise;
   onTranslateRequest: (text: string) => void;
@@ -25,13 +26,21 @@ interface Subtitle {
   text: string;
 }
 
-// 新增：单词释义组件
+// 翻译状态接口
+interface TranslationState {
+  word: string;
+  translation: string;
+  isLoading: boolean;
+  error: string | null;
+}
+
+// 单词释义组件
 function WordDefinitionBox({ 
-  word, 
+  translationState,
   isVisible, 
   onClose 
 }: { 
-  word: string; 
+  translationState: TranslationState;
   isVisible: boolean; 
   onClose: () => void; 
 }) {
@@ -68,16 +77,29 @@ function WordDefinitionBox({
     lineHeight: 1,
   };
 
-  const definitionStyle: React.CSSProperties = {
+  const wordStyle: React.CSSProperties = {
     fontSize: "16px",
     fontWeight: "600",
     marginBottom: "8px",
     color: "#4A9EFF",
   };
 
-  const wordStyle: React.CSSProperties = {
+  const translationStyle: React.CSSProperties = {
     fontSize: "14px",
-    opacity: 0.8,
+    opacity: 0.9,
+    lineHeight: 1.4,
+  };
+
+  const loadingStyle: React.CSSProperties = {
+    fontSize: "14px",
+    opacity: 0.7,
+    fontStyle: "italic",
+  };
+
+  const errorStyle: React.CSSProperties = {
+    fontSize: "14px",
+    color: "#FF6B6B",
+    opacity: 0.9,
   };
 
   return (
@@ -94,8 +116,16 @@ function WordDefinitionBox({
       >
         ×
       </button>
-      <div style={definitionStyle}>释义：{word}</div>
-      <div style={wordStyle}>点击单词查看释义</div>
+      <div style={wordStyle}>{translationState.word}</div>
+      {translationState.isLoading && (
+        <div style={loadingStyle}>正在翻译...</div>
+      )}
+      {translationState.error && (
+        <div style={errorStyle}>{translationState.error}</div>
+      )}
+      {!translationState.isLoading && !translationState.error && translationState.translation && (
+        <div style={translationStyle}>{translationState.translation}</div>
+      )}
     </div>
   );
 }
@@ -114,12 +144,51 @@ export function VideoItem({
   const [currentSubtitle, setCurrentSubtitle] = useState<Subtitle | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // 新增：用于控制练习状态，与 TranslateItem 保持一致
+  // 用于控制练习状态
   const [isSuccess, setIsSuccess] = useState<boolean | null>(null);
   
-  // 新增：单词释义状态
-  const [selectedWord, setSelectedWord] = useState<string>("");
+  // 翻译相关状态
+  const [translationState, setTranslationState] = useState<TranslationState>({
+    word: "",
+    translation: "",
+    isLoading: false,
+    error: null,
+  });
   const [showDefinition, setShowDefinition] = useState(false);
+
+  // 翻译API调用函数
+  const fetchTranslation = useCallback(async (word: string) => {
+    setTranslationState(prev => ({
+      ...prev,
+      word,
+      isLoading: true,
+      error: null,
+      translation: "",
+    }));
+
+    try {
+      console.log("🔄 开始获取单词翻译...", { word });
+      const response = await contentApiClient.wordlistTranslateGet(word);
+      console.log("✅ 翻译API响应成功:", {
+        status: response.status,
+        simple_trans: response.data?.simple_trans,
+      });
+
+      setTranslationState(prev => ({
+        ...prev,
+        translation: response.data?.simple_trans || "暂无翻译",
+        isLoading: false,
+      }));
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "翻译失败";
+      console.error("❌ 获取翻译失败:", message, error);
+      setTranslationState(prev => ({
+        ...prev,
+        error: "获取翻译失败",
+        isLoading: false,
+      }));
+    }
+  }, []);
 
   // 加载字幕文件
   useEffect(() => {
@@ -139,15 +208,15 @@ export function VideoItem({
     }
   }, [exercise.srt]);
 
-  // 新增：当 isSuccess 状态改变时，调用 onResult 回调
+  // 当 isSuccess 状态改变时，调用 onResult 回调
   useEffect(() => {
     if (isSuccess !== null) {
       onResult(isSuccess);
     }
   }, [isSuccess]);
 
-  // 修改：增强的单词点击处理函数
-  const handleWordPress = (word: string) => {
+  // 增强的单词点击处理函数
+  const handleWordPress = useCallback(async (word: string) => {
     const cleanedWord = word.trim().replace(/[.,!?;:"]$/, "");
     if (!cleanedWord) {
       return;
@@ -160,23 +229,29 @@ export function VideoItem({
       (videoRef.current as Video)?.pauseAsync();
     }
     
-    // 显示单词释义
-    setSelectedWord(cleanedWord);
+    // 显示释义框
     setShowDefinition(true);
     
-    // 调用原有的翻译请求
+    // 调用原有的翻译请求（保持兼容性）
     onTranslateRequest(cleanedWord);
-  };
+    
+    // 调用新的翻译API
+    await fetchTranslation(cleanedWord);
+  }, [fetchTranslation, onTranslateRequest]);
 
-  // 新增：关闭释义框函数
-  const handleCloseDefinition = () => {
+  // 关闭释义框函数
+  const handleCloseDefinition = useCallback(() => {
     setShowDefinition(false);
-    setSelectedWord("");
-  };
+    setTranslationState({
+      word: "",
+      translation: "",
+      isLoading: false,
+      error: null,
+    });
+  }, []);
 
-
-  // 新增：当用户点击 "继续" 按钮时触发
-  const onPressCheck = () => {
+  // 当用户点击 "继续" 按钮时触发
+  const onPressCheck = useCallback(() => {
     // 重置状态
     setIsSuccess(null);
     // 关闭释义框
@@ -188,7 +263,7 @@ export function VideoItem({
       (videoRef.current as Video)?.setPositionAsync(0);
     }
     onContinue();
-  };
+  }, [handleCloseDefinition, onContinue]);
 
   // 视频播放状态更新时触发
   const onPlaybackStatusUpdate = (status: AVPlaybackStatus) => {
@@ -209,8 +284,7 @@ export function VideoItem({
       setCurrentSubtitle(activeSubtitle || null);
     }
 
-    // 新增：检查视频是否播放完毕
-    // 如果视频刚刚播放完，并且我们还没有设置结果，则将结果设为成功
+    // 检查视频是否播放完毕
     if (status.didJustFinish && isSuccess === null) {
       setIsSuccess(true);
     }
@@ -218,7 +292,6 @@ export function VideoItem({
 
   // --- Web端自定义渲染 ---
   if (Platform.OS === "web") {
-    // 视频容器样式
     const videoContainerStyle: React.CSSProperties = {
       position: "relative",
       width: 800,
@@ -231,7 +304,6 @@ export function VideoItem({
       margin: "0 auto",
     };
 
-    // 视频样式
     const videoStyleWeb: React.CSSProperties = {
       position: "absolute",
       top: "50%",
@@ -305,12 +377,7 @@ export function VideoItem({
                     onClick={(e) => {
                       e.stopPropagation();
                       e.preventDefault();
-                      try {
-                        handleWordPress(word);
-                        console.log("✅ handleWordPress 调用完成");
-                      } catch (error) {
-                        console.error("❌ handleWordPress 出错:", error);
-                      }
+                      handleWordPress(word);
                     }}
                     style={{ 
                       cursor: "pointer", 
@@ -335,7 +402,7 @@ export function VideoItem({
           </div>
         </div>
 
-        {/* 新增：单词释义显示区域 */}
+        {/* 单词释义显示区域 */}
         <div style={{ 
           position: "relative", 
           marginTop: 20, 
@@ -346,7 +413,7 @@ export function VideoItem({
           justifyContent: "center"
         }}>
           <WordDefinitionBox
-            word={selectedWord}
+            translationState={translationState}
             isVisible={showDefinition}
             onClose={handleCloseDefinition}
           />
@@ -399,12 +466,20 @@ export function VideoItem({
         </View>
       </View>
       
-      {/* 新增：React Native端的单词释义显示 */}
+      {/* React Native端的单词释义显示 */}
       {showDefinition && (
         <View style={styles.definitionContainer}>
           <View style={styles.definitionBox}>
-            <Text style={styles.definitionTitle}>释义：{selectedWord}</Text>
-            <Text style={styles.definitionHint}>点击单词查看释义</Text>
+            <Text style={styles.definitionWord}>{translationState.word}</Text>
+            {translationState.isLoading && (
+              <Text style={styles.loadingText}>正在翻译...</Text>
+            )}
+            {translationState.error && (
+              <Text style={styles.errorDefinitionText}>{translationState.error}</Text>
+            )}
+            {!translationState.isLoading && !translationState.error && translationState.translation && (
+              <Text style={styles.definitionText}>{translationState.translation}</Text>
+            )}
             <Button 
               disabled={false} 
               onPress={handleCloseDefinition}
@@ -423,16 +498,8 @@ export function VideoItem({
   );
 }
 
-
-// export function VideoExercise;
-
 // ------------------- 工具函数 -------------------
 
-/**
- * 从 URL 获取并解析 SRT 字幕文件。
- * @param {string} url - SRT 文件的 URL.
- * @returns {Promise<Subtitle[]>} - 解析后的字幕对象数组。
- */
 async function fetchAndParseSrt(url: string): Promise<Subtitle[]> {
   const response = await fetch(url);
   if (!response.ok) {
@@ -443,11 +510,6 @@ async function fetchAndParseSrt(url: string): Promise<Subtitle[]> {
   return parser.fromSrt(srtContent);
 }
 
-/**
- * 将 SRT 的时间字符串 'HH:mm:ss,SSS' 转换为毫秒。
- * @param {string} time - SRT 格式的时间字符串。
- * @returns {number} - 对应的毫秒数。
- */
 function parseSrtTime(time: string): number {
   const parts = time.split(/[:,]/);
   const hours = parseInt(parts[0], 10);
@@ -457,7 +519,6 @@ function parseSrtTime(time: string): number {
 
   return hours * 3600000 + minutes * 60000 + seconds * 1000 + milliseconds;
 }
-
 
 // ------------------- 样式表 -------------------
 
@@ -490,12 +551,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
   },
-  clickableWord: {
-    // 我们可以给可点击的单词加上下划线，让用户知道这里可以点击
-    // textDecorationLine: 'underline',
-    // 也可以改变颜色，例如：
-    // color: '#a0e0ff', 
-  },
   errorText: {
     color: "#ff4d4d",
     fontSize: 16,
@@ -504,7 +559,7 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 5,
   },
-  // 新增：React Native端的单词释义样式
+  // React Native端的单词释义样式
   definitionContainer: {
     padding: 16,
     alignItems: "center",
@@ -518,17 +573,31 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.2)",
   },
-  definitionTitle: {
+  definitionWord: {
     color: "#4A9EFF",
     fontSize: 16,
     fontWeight: "600",
     marginBottom: 8,
     textAlign: "center",
   },
-  definitionHint: {
+  definitionText: {
     color: "white",
     fontSize: 14,
-    opacity: 0.8,
+    textAlign: "center",
+    marginBottom: 12,
+    lineHeight: 20,
+  },
+  loadingText: {
+    color: "white",
+    fontSize: 14,
+    opacity: 0.7,
+    fontStyle: "italic",
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  errorDefinitionText: {
+    color: "#FF6B6B",
+    fontSize: 14,
     textAlign: "center",
     marginBottom: 12,
   },
