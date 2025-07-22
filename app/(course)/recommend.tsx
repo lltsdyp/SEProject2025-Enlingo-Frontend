@@ -4,6 +4,7 @@ import { MasonryFlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import { Image } from 'expo-image';
 import { RecommendVideoResponse, RecommendVideoFetchResponse } from '@/api/models';
 import { contentApiClient } from '@/api';
+import { useCourse } from '@/context/course';
 
 // 卡片组件保持不变
 const QuestCard = ({ item }: { item: RecommendVideoResponse }) => {
@@ -29,7 +30,9 @@ export default function Quests() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasNextPage, setHasNextPage] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
-  
+  const { courseProgress, setCourseProgress } = useCourse();
+
+
   // [下拉刷新] 1. 添加一个新的 state 用于控制刷新动画的显示
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -39,21 +42,22 @@ export default function Quests() {
     if (isLoading || (!isInitialLoad && !hasNextPage)) {
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
       const beforeCursor = nextCursor && !isInitialLoad ? parseInt(nextCursor, 10) : undefined;
-      
+
       if (nextCursor && !isInitialLoad && isNaN(beforeCursor as number)) {
-          console.error("无效的游标格式:", nextCursor);
-          setIsLoading(false);
-          return;
+        console.error("无效的游标格式:", nextCursor);
+        setIsLoading(false);
+        return;
       }
-      
+      const statusStr=`${courseProgress.sectionIdx}-${courseProgress.chapterIdx}-${courseProgress.lessonIdx}-${courseProgress.exerciseIdx}`;
+
       // 如果是初始加载或刷新，游标应该为 undefined
       const cursorForAPI = isInitialLoad ? undefined : beforeCursor;
-      const response = await contentApiClient.recommendGetGet(2, undefined, cursorForAPI);
+      const response = await contentApiClient.recommendGetGet(2, undefined, cursorForAPI,statusStr);
       const apiData: RecommendVideoFetchResponse = response.data;
 
       if (apiData.data) {
@@ -98,15 +102,15 @@ export default function Quests() {
     }
     // 当没有更多页面时，显示提示信息
     if (!hasNextPage && videos.length > 0) {
-        return (
-            <View style={styles.footer}>
-                <Text>没有更多视频了</Text>
-            </View>
-        );
+      return (
+        <View style={styles.footer}>
+          <Text>没有更多视频了</Text>
+        </View>
+      );
     }
     return null;
   };
-  
+
   // 初始加载占位符保持不变
   if (isLoading && videos.length === 0) {
     return (

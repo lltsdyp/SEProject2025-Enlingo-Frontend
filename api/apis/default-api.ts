@@ -74,7 +74,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search='';
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = localVarFormParams;
@@ -111,7 +111,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search='';
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -150,7 +150,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search='';
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -189,7 +189,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search='';
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -228,7 +228,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search='';
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -267,7 +267,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search='';
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -282,10 +282,11 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {number} limit 限制此次请求返回的最大视频数量
          * @param {number} [id] 指定一次fetch的id
          * @param {number} [before] 指向最后一条记录的游标
+         * @param {string} [status] 学习进度，格式\&quot;section-chapter-lesson-exercise\&quot;
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        recommendGetGet: async (limit: number, id?: number, before?: number, options: any = {}): Promise<RequestArgs> => {
+        recommendGetGet: async (limit: number, id?: number, before?: number, status?: string, options: any = {}): Promise<RequestArgs> => {
             // verify required parameter 'limit' is not null or undefined
             if (limit === null || limit === undefined) {
                 throw new RequiredError('limit','Required parameter limit was null or undefined when calling recommendGetGet.');
@@ -312,11 +313,15 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
                 localVarQueryParameter['before'] = before;
             }
 
+            if (status !== undefined) {
+                localVarQueryParameter['status'] = status;
+            }
+
 
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search='';
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -355,7 +360,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search='';
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -394,7 +399,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search='';
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -438,7 +443,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search='';
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -468,7 +473,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search='';
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -503,7 +508,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
     
             localVarUrlObj.query = {...localVarUrlObj.query, ...localVarQueryParameter, ...options.query};
             // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
+            localVarUrlObj.search='';
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
@@ -612,11 +617,12 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {number} limit 限制此次请求返回的最大视频数量
          * @param {number} [id] 指定一次fetch的id
          * @param {number} [before] 指向最后一条记录的游标
+         * @param {string} [status] 学习进度，格式\&quot;section-chapter-lesson-exercise\&quot;
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async recommendGetGet(limit: number, id?: number, before?: number, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<RecommendVideoFetchResponse>> {
-            const localVarAxiosArgs = await DefaultApiAxiosParamCreator(configuration).recommendGetGet(limit, id, before, options);
+        async recommendGetGet(limit: number, id?: number, before?: number, status?: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<RecommendVideoFetchResponse>> {
+            const localVarAxiosArgs = await DefaultApiAxiosParamCreator(configuration).recommendGetGet(limit, id, before, status, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
                 return axios.request(axiosRequestArgs);
@@ -768,11 +774,12 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {number} limit 限制此次请求返回的最大视频数量
          * @param {number} [id] 指定一次fetch的id
          * @param {number} [before] 指向最后一条记录的游标
+         * @param {string} [status] 学习进度，格式\&quot;section-chapter-lesson-exercise\&quot;
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        recommendGetGet(limit: number, id?: number, before?: number, options?: any): AxiosPromise<RecommendVideoFetchResponse> {
-            return DefaultApiFp(configuration).recommendGetGet(limit, id, before, options).then((request) => request(axios, basePath));
+        recommendGetGet(limit: number, id?: number, before?: number, status?: string, options?: any): AxiosPromise<RecommendVideoFetchResponse> {
+            return DefaultApiFp(configuration).recommendGetGet(limit, id, before, status, options).then((request) => request(axios, basePath));
         },
         /**
          * 添加一个单词到用户的生词本中
@@ -913,12 +920,13 @@ export class DefaultApi extends BaseAPI {
      * @param {number} limit 限制此次请求返回的最大视频数量
      * @param {number} [id] 指定一次fetch的id
      * @param {number} [before] 指向最后一条记录的游标
+     * @param {string} [status] 学习进度，格式\&quot;section-chapter-lesson-exercise\&quot;
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public recommendGetGet(limit: number, id?: number, before?: number, options?: any) {
-        return DefaultApiFp(this.configuration).recommendGetGet(limit, id, before, options).then((request) => request(this.axios, this.basePath));
+    public recommendGetGet(limit: number, id?: number, before?: number, status?: string, options?: any) {
+        return DefaultApiFp(this.configuration).recommendGetGet(limit, id, before, status, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

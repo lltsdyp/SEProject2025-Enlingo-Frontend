@@ -10,8 +10,4 @@ export * from './retelling-exercise-response';
 export * from './section-info-response';
 export * from './section-list-response';
 export * from './video-exercise-response';
-export * from './video-subtitle-get200-response';
 export * from './wordlist-fetch-info-response';
-export * from './wordlist-randomword-get200-response';
-export * from './wordlist-translate-get200-response';
-export * from './worksheet-fetch-info-response';
