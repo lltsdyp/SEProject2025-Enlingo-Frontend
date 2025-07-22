@@ -23,7 +23,6 @@ import { contentApiClient } from "@/api";
 // =========================
 // 🔧 类型定义
 // =========================
-
 interface WordState {
   words: string[];
   currentIndex: number;
@@ -38,7 +37,6 @@ interface WordState {
   allWordsLoaded: boolean;
   isDeleting: boolean;
 }
-
 type WordAction =
   | { type: "FETCH_START"; initial?: boolean }
   | { type: "FETCH_SUCCESS"; data: { list: string[]; hasNextPage: boolean; nextWord: string | null }; append: boolean }
@@ -123,7 +121,6 @@ function wordReducer(state: WordState, action: WordAction): WordState {
 // =========================
 // 🎣 自定义 Hook：获取生词列表
 // =========================
-
 function useFetchWords(
   courseId: string | null,
   dispatch: React.Dispatch<WordAction>
@@ -131,7 +128,6 @@ function useFetchWords(
   const fetchWords = useCallback(
     async (before?: string, append = false) => {
       dispatch({ type: "FETCH_START", initial: !append });
-
       try {
         console.log("🔄 开始获取生词列表...", { before, append });
         const response = await contentApiClient.wordlistGetGet(2, before || undefined);
@@ -140,7 +136,6 @@ function useFetchWords(
           count: response.data?.list?.length,
           hasNextPage: response.data?.hasNextPage,
         });
-
         dispatch({
           type: "FETCH_SUCCESS",
           data: {
@@ -158,18 +153,15 @@ function useFetchWords(
     },
     [dispatch]
   );
-
   return fetchWords;
 }
 
 // =========================
 // 🖼️ 动画控制器
 // =========================
-
 function useCardAnimation() {
   const slideAnim = new Animated.Value(0);
   const scaleAnim = new Animated.Value(1);
-
   const animateSlideOut = useCallback((callback: () => void) => {
     Animated.timing(slideAnim, {
       toValue: 1,
@@ -177,11 +169,9 @@ function useCardAnimation() {
       useNativeDriver: true,
     }).start(callback);
   }, [slideAnim]);
-
   const resetSlide = useCallback(() => {
     slideAnim.setValue(0);
   }, [slideAnim]);
-
   const animateButtonPress = useCallback(() => {
     Animated.sequence([
       Animated.timing(scaleAnim, {
@@ -196,7 +186,6 @@ function useCardAnimation() {
       }),
     ]).start();
   }, [scaleAnim]);
-
   const slideStyle = useMemo(
     () => ({
       transform: [
@@ -210,7 +199,6 @@ function useCardAnimation() {
     }),
     [slideAnim]
   );
-
   return {
     slideAnim,
     scaleAnim,
@@ -224,13 +212,11 @@ function useCardAnimation() {
 // =========================
 // 🧱 子组件：顶部进度条
 // =========================
-
 const ProgressBar = React.memo<{
   progress: number;
   rounds: number;
 }>(({ progress, rounds }) => {
   const { border, accent, mutedForeground } = useTheme();
-
   return (
     <View style={styles.progressContainer}>
       <View style={[styles.progressBarBg, { borderColor: border }]}>
@@ -251,14 +237,12 @@ const ProgressBar = React.memo<{
 // =========================
 // 🧱 子组件：单词卡片
 // =========================
-
 const WordCard = React.memo<{
   word: string;
   animationStyle: any;
 }>(({ word, animationStyle }) => {
   const { foreground, background, border } = useTheme();
   const fontSize = Dimensions.get("window").width > 768 ? 36 : 28;
-
   return (
     <Animated.View style={[styles.card, { borderColor: border, backgroundColor: background }, animationStyle]}>
       <RNText style={[styles.wordText, { color: foreground, fontSize }]}>
@@ -271,16 +255,13 @@ const WordCard = React.memo<{
 // =========================
 // 🧱 子组件：操作按钮组
 // =========================
-
 const ActionButtons = React.memo<{
   onAnswer: (known: boolean) => void;
   disabled: boolean;
   scaleAnim: Animated.Value;
 }>(({ onAnswer, disabled, scaleAnim }) => {
   const { accent, border, mutedForeground } = useTheme();
-
   const buttonScale = scaleAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 0.95] });
-
   return (
     <Animated.View style={[styles.buttonGroup, { transform: [{ scale: buttonScale }] }]}>
       {/* 不认识 */}
@@ -296,7 +277,6 @@ const ActionButtons = React.memo<{
       >
         <Text style={styles.unknownText}>遗忘</Text>
       </Pressable>
-
       {/* 认识 */}
       <Pressable
         onPress={() => onAnswer(true)}
@@ -315,9 +295,8 @@ const ActionButtons = React.memo<{
 });
 
 // =========================
-// 🧱 子组件：重新开始对话框
+// 🧱 子组件：重新开始对话框 (修复版)
 // =========================
-
 const RestartDialog = React.memo<{
   visible: boolean;
   totalCount: number;
@@ -325,36 +304,75 @@ const RestartDialog = React.memo<{
   onReturn: () => void;
   onRestart: () => void;
 }>(({ visible, totalCount, completedRounds, onReturn, onRestart }) => {
+  const { background, foreground, mutedForeground, accent, border } = useTheme();
+
+  // 使用 useState 和 useEffect 来监听屏幕尺寸变化
+  const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
+
+  useEffect(() => {
+    const onChange = ({ window }: { window: { width: number; height: number } }) => {
+      setScreenWidth(window.width);
+    };
+
+    const subscription = Dimensions.addEventListener('change', onChange);
+    
+    // 清理函数
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
   if (!visible) return null;
 
-  const { background, foreground, mutedForeground, accent, border } = useTheme();
+  // 根据当前屏幕宽度计算样式
+  const isLargeScreen = screenWidth > 768;
+  const titleSize = isLargeScreen ? 20 : 16;
+  const bodySize = isLargeScreen ? 16 : 14;
+  const smallSize = isLargeScreen ? 14 : 12;
+  const btnTextSize = isLargeScreen ? 14 : 13;
+  const padding = layouts.padding;
+  const gap = isLargeScreen ? padding : padding * 0.8;
+  const btnPaddingVertical = padding * 1.2;
+  const btnPaddingHorizontal = padding * 1.5;
 
   return (
     <View style={styles.dialogOverlay}>
       <View style={styles.dialogContainer}>
         <View style={[styles.dialogBox, { backgroundColor: background, borderColor: border }]}>
-          <Text style={[styles.dialogTitle, { color: foreground }]}>🎉 恭喜完成复习！</Text>
-          <Text style={[styles.dialogBody, { color: foreground }]}>
+          <Text style={[styles.dialogTitle, { color: foreground, fontSize: titleSize, marginBottom: padding * 1.2 }]}>
+            🎉 恭喜完成复习！
+          </Text>
+          <Text style={[styles.dialogBody, { color: foreground, fontSize: bodySize, marginBottom: padding * 0.8 }]}>
             你已经完成了所有 {totalCount} 个单词的复习
           </Text>
           {completedRounds > 0 && (
-            <Text style={[styles.dialogSmall, { color: mutedForeground }]}>
+            <Text style={[styles.dialogSmall, { color: mutedForeground, fontSize: smallSize, marginBottom: padding * 0.6 }]}>
               这是第 {completedRounds + 1} 轮复习
             </Text>
           )}
-          <Text style={[styles.dialogSmall, { color: mutedForeground }]}>
+          <Text style={[styles.dialogSmall, { color: mutedForeground, fontSize: smallSize, marginBottom: padding * 1.2 }]}>
             继续练习还是回到学习页面？
           </Text>
-
-          <View style={styles.buttonRow}>
-            <Pressable onPress={onReturn} style={({ pressed }) => [styles.smallBtn, pressed && styles.smallBtnPressed]}>
-              <Text style={[styles.smallBtnText, { color: mutedForeground }]}>返回学习</Text>
+          <View style={[styles.buttonRow, { gap, marginTop: padding * 1.2 }]}>
+            <Pressable
+              onPress={onReturn}
+              style={({ pressed }) => [
+                styles.smallBtn,
+                { paddingVertical: btnPaddingVertical, paddingHorizontal: btnPaddingHorizontal },
+                pressed && styles.smallBtnPressed
+              ]}
+            >
+              <Text style={[styles.smallBtnText, { color: mutedForeground, fontSize: btnTextSize }]}>返回学习</Text>
             </Pressable>
             <Pressable
               onPress={onRestart}
-              style={({ pressed }) => [styles.primaryBtn, pressed && styles.primaryBtnPressed]}
+              style={({ pressed }) => [
+                styles.primaryBtn,
+                { paddingVertical: btnPaddingVertical, paddingHorizontal: btnPaddingHorizontal },
+                pressed && styles.primaryBtnPressed
+              ]}
             >
-              <Text style={styles.primaryBtnText}>再来一轮</Text>
+              <Text style={[styles.primaryBtnText, { fontSize: btnTextSize }]}>再来一轮</Text>
             </Pressable>
           </View>
         </View>
@@ -366,14 +384,12 @@ const RestartDialog = React.memo<{
 // =========================
 // 🧩 主组件
 // =========================
-
 export default function VocabularyPractice() {
   const { courseId } = useCourse();
   const { foreground, mutedForeground, border, accent, background } = useTheme();
   const [state, dispatch] = useReducer(wordReducer, initialState);
   const fetchWords = useFetchWords(courseId, dispatch);
   const { slideAnim, scaleAnim, animateSlideOut, resetSlide, animateButtonPress, slideStyle } = useCardAnimation();
-
   const { words, currentIndex, hasNextPage, nextWord, loading, error, retryCount, isLoadingMore, completedRounds, showRestartDialog, allWordsLoaded, isDeleting } = state;
 
   // 初始加载
@@ -417,14 +433,12 @@ export default function VocabularyPractice() {
   const handleAnswer = useCallback(
     (isKnown: boolean) => {
       animateButtonPress();
-
       if (isKnown && currentIndex < words.length && !isDeleting) {
         const wordToDelete = words[currentIndex];
         console.log("🗑️ 删除单词:", wordToDelete);
         contentApiClient.wordlistDeletePost(wordToDelete).catch(console.error);
         dispatch({ type: "DELETE_WORD", word: wordToDelete });
       }
-
       animateSlideOut(() => {
         const remaining = words.filter((_, i) => i !== currentIndex);
         if (currentIndex < remaining.length - 1) {
@@ -472,7 +486,6 @@ export default function VocabularyPractice() {
   // =========================
   // 🖨️ 渲染逻辑
   // =========================
-
   if (loading && words.length === 0) {
     return (
       <View style={[styles.flexCenter, { backgroundColor: background }]}>
@@ -518,18 +531,14 @@ export default function VocabularyPractice() {
     <View style={[styles.container, { backgroundColor: background }]}>
       {/* 进度条 */}
       <ProgressBar progress={progress} rounds={completedRounds} />
-
       {/* 主体内容 */}
       <View style={styles.content}>
         <WordCard word={words[currentIndex]} animationStyle={slideStyle} />
-
         <ActionButtons onAnswer={handleAnswer} disabled={isDeleting} scaleAnim={scaleAnim} />
-
         <Text style={[styles.tip, { color: mutedForeground }]}>诚实地选择你的熟悉程度</Text>
         <Text style={[styles.subTip, { color: mutedForeground }]}>选择"认识"将从生词本中移除该单词</Text>
         {isLoadingMore && <Text style={[styles.subTip, { color: mutedForeground }]}>正在加载更多单词...</Text>}
       </View>
-
       {/* 重启对话框 */}
       <RestartDialog
         visible={showRestartDialog}
@@ -543,9 +552,10 @@ export default function VocabularyPractice() {
 }
 
 // =========================
-// 🎨 样式表
+// 🎨 样式表 (简化版)
 // =========================
-
+// 移除了所有在 StyleSheet.create 中的动态值（如 Dimensions.get），仅保留基础结构和固定值。
+// 所有依赖尺寸的样式都已移到 RestartDialog 组件内部作为内联样式。
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -603,8 +613,8 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 10,
     borderWidth: 1,
-    minWidth: Dimensions.get("window").width * 0.3,
-    maxWidth: Dimensions.get("window").width * 0.5,
+    minWidth: 100,
+    maxWidth: 300,
     alignItems: "center",
   },
   wordText: {
@@ -651,7 +661,6 @@ const styles = StyleSheet.create({
   unknownText: {
     color: "#dc2626",
     fontWeight: "700",
-    fontSize: Dimensions.get("window").width > 768 ? 16 : 12,
   },
   knownButton: {
     backgroundColor: "#f0fdf4",
@@ -668,7 +677,6 @@ const styles = StyleSheet.create({
   knownText: {
     color: "#16a34a",
     fontWeight: "700",
-    fontSize: Dimensions.get("window").width > 768 ? 16 : 12,
   },
   disabledButton: {
     opacity: 0.6,
@@ -700,22 +708,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
-  // Dialog Styles
+  // Dialog Styles - 简化，只保留非尺寸相关的基础样式
   dialogOverlay: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 9999,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   dialogContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: layouts.padding * 2,
   },
   dialogBox: {
     borderRadius: layouts.padding * 2,
-    padding: layouts.padding * 3,
-    minWidth: "90%",
-    maxWidth: 200,
+    width: '85%',
+    maxWidth: 340,
     borderWidth: 1,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
@@ -724,52 +731,35 @@ const styles = StyleSheet.create({
     elevation: 15,
   },
   dialogTitle: {
-    fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: layouts.padding * 2,
   },
   dialogBody: {
-    fontSize: 16,
     textAlign: "center",
-    marginBottom: layouts.padding,
-    lineHeight: 24,
   },
   dialogSmall: {
-    fontSize: 14,
     textAlign: "center",
-    marginBottom: layouts.padding,
   },
   buttonRow: {
     flexDirection: "row",
-    gap: layouts.padding,
     justifyContent: "center",
-    marginTop: layouts.padding * 2,
   },
   smallBtn: {
     backgroundColor: "transparent",
-    paddingVertical: layouts.padding * 1.5,
-    paddingHorizontal: layouts.padding * 2,
     borderRadius: layouts.padding,
     borderWidth: 1,
     flex: 1,
-    maxWidth: 120,
   },
   smallBtnPressed: {
     backgroundColor: "rgba(0,0,0,0.1)",
   },
   smallBtnText: {
     fontWeight: "600",
-    fontSize: 14,
-    textAlign: "center",
   },
   primaryBtn: {
     backgroundColor: "rgb(64, 145, 255)",
-    paddingVertical: layouts.padding * 1.5,
-    paddingHorizontal: layouts.padding * 2,
     borderRadius: layouts.padding,
     flex: 1,
-    maxWidth: 120,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -781,7 +771,5 @@ const styles = StyleSheet.create({
   primaryBtnText: {
     color: "white",
     fontWeight: "700",
-    fontSize: 14,
-    textAlign: "center",
   },
 });
