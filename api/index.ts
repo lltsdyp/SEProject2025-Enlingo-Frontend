@@ -117,8 +117,8 @@ export const getChapterById = async (id: number): Promise<Chapter> => {
 export const getLessonById = async (lessonIdx: number): Promise<Lesson> => {
   try {
     // 假设 contentChapterGet 是获取 Lesson 的方法，如果不是请替换
-    // const response = await apiClient.contentLessonGet(lessonIdx);
-    const response = { data: require('@/mock/content/lesson.json') };
+    const response = await contentApiClient.contentLessonGet(lessonIdx);
+    // const response = { data: require('@/mock/content/lesson.json') };
 
     // 在这里进行数据转换，适配成你的 Lesson 类型
     const transformedLesson: Lesson = {

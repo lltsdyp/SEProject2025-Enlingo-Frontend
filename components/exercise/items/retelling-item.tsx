@@ -53,6 +53,7 @@ export function RetellingItem({
   const [isUploading, setIsUploading] = useState(false);
   const [isSuccess, setIsSuccess] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [score, setScore] = useState<number | null>(null);
 
   const [processingStage, setProcessingStage] = useState<string | null>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -98,7 +99,7 @@ export function RetellingItem({
         setProcessingStage(null);
         return; // 退出函数
       }
-      
+
       attempts++;
 
       try {
@@ -125,13 +126,15 @@ export function RetellingItem({
             pollingIntervalRef.current = null;
 
             // 根据业务逻辑判断成功或失败（例如，分数是否达标）
+            const receivedScore = data.result?.overall_score ?? 0;
+            setScore(receivedScore);
             const success = (data.result?.overall_score ?? 0) > 75;
             setIsSuccess(success);
-            
+
             if (!success) {
               setError("评估未通过，请再试一次。");
             }
-            
+
             setIsUploading(false);
             setProcessingStage(null);
             break;
@@ -153,7 +156,7 @@ export function RetellingItem({
             setProcessingStage(data.stage || "正在分析...");
             // 不做任何操作，等待下一次轮询
             break;
-            
+
           default:
             // 收到未知的状态，记录日志，继续轮询
             console.warn(`Received unknown status from API: ${data.status}`);
@@ -356,6 +359,18 @@ export function RetellingItem({
         </>
       );
     }
+    if (isSuccess !== null) {
+      const scoreText = score !== null ? `${score}/100` : "评分完成";
+      const label = isSuccess ? "优秀" : "未通过";
+
+      return (
+        <>
+          <View style={styles.micIcon} />
+          <Text style={styles.buttonText}>{`评分：${label}`}</Text>
+          <Text style={styles.buttonSubText}>{scoreText}</Text>
+        </>
+      );
+    }
     // 默认显示录音图标和文字
     return (
       <>
@@ -491,4 +506,17 @@ const styles = StyleSheet.create({
   },
   // successText, footer, resultContainer 样式已被移除
   // 因为它们的功能现在由 ExerciseItemEvent 组件处理
+  // 样式扩展
+buttonSubText: {
+  color: "white",
+  fontSize: 14,
+  fontWeight: "500",
+  marginTop: 4,
+},
+recordButtonSuccess: {
+  backgroundColor: "#50C878",
+},
+recordButtonFailed: {
+  backgroundColor: "#FF4500",
+}
 });
