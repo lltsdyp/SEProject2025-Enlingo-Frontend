@@ -23,7 +23,6 @@ export function useExercise(exerciseId: ExerciseSetId): { exercise: ExerciseSet,
     staleTime: 5 * 60 * 1000, // 5 分钟内数据保持新鲜
     retry: 3,
   });
-  console.log("useExerciseData:",exercise);
   return { exercise: exercise as ExerciseSet, isLoading, isError }
 }
 

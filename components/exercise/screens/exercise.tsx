@@ -60,7 +60,7 @@ export default function ExerciseScreen({ exerciseId, increaseProgress }: Props) 
     if (!exercise || !Array.isArray(exercise.items)) {
       return [];
     }
-    return shuffleArray([...exercise.items]);
+    return [...exercise.items];
   }, [exercise]);
   
   const totalExerciseItems = shuffledExerciseItems.length;
@@ -94,7 +94,7 @@ export default function ExerciseScreen({ exerciseId, increaseProgress }: Props) 
   
   // 为业务逻辑建立守卫
   if (isFinished) {
-    return <LessonOutroScreen xp={exercise.xp} /*...*/ duration={""} target={""} increaseProgress={true} /*...*/ />;
+    return <LessonOutroScreen xp={exercise.xp} /*...*/ duration={""} target={""} increaseProgress={increaseProgress} /*...*/ />;
   }
 
   const onResult = (success: boolean) => {

@@ -2,13 +2,11 @@ import ExerciseScreen from "@/components/exercise/screens/exercise";
 import { Metadata } from "@/components/metadata";
 import { getExercise } from "@/content/courses/data";
 import { useCourse } from "@/context/course";
+import { useLocalSearchParams } from "expo-router";
 
 export default function Lesson() {
-  const { courseId, courseProgress } = useCourse();
-  if (!courseId) return null;
-
-  const exercise = getExercise(courseProgress);
-  if (!exercise) return null;
+  const { exerciseId } = useLocalSearchParams<{ exerciseId: string }>();
+  console.log("exerciseId:", exerciseId);
 
   return (
     <>
@@ -16,7 +14,7 @@ export default function Lesson() {
         title="Lesson"
         description="Learn a new lesson every day to keep your streak."
       />
-      <ExerciseScreen exerciseId={exercise} increaseProgress={true} />
+      <ExerciseScreen exerciseId={{id: parseInt(exerciseId,10)}} increaseProgress={false} />
     </>
   );
 }
