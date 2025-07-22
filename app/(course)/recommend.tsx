@@ -128,7 +128,7 @@ export default function Quests() {
         contentContainerStyle={styles.listContainer}
         // 实现无限滚动
         onEndReached={() => loadVideos()}
-        onEndReachedThreshold={0.5}
+        onEndReachedThreshold={0.1}
         ListFooterComponent={ListFooterComponent}
         // [下拉刷新] 3. 将 state 和回调函数传递给列表组件
         onRefresh={onRefresh}
