@@ -165,3 +165,4 @@ export function CourseProvider({ children }: Props) {
     </CourseContext.Provider>
   );
 }
+

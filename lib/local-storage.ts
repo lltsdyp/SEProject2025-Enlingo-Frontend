@@ -10,6 +10,7 @@ export async function getLocalData(id: string): Promise<string | null> {
       const storedValue = await AsyncStorage.getItem(id);
       value = storedValue !== null ? JSON.parse(storedValue) : null;
     }
+    console.log("Got local storage key:",id," value:",value);
     return value;
   } catch (error) {
     console.error(`Error getting data for ID ${id}:`, error);
@@ -19,6 +20,7 @@ export async function getLocalData(id: string): Promise<string | null> {
 
 export async function setLocalData(id: string, value: string) {
   try {
+    console.log("Setting local data",id," to value ",value);
     if (Platform.OS === "web") {
       localStorage.setItem(id, value);
     } else {
